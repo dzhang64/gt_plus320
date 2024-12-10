@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysusercomputersubsidiesapply.dao.SysUserComputerSubsidiesApplyDao">
+    
+	<sql id="sysUserComputerSubsidiesApplyColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.computer_configuration AS "computerConfiguration",
+		a.computer_serial_number AS "computerSerialNumber",
+		a.buy_date AS "buyDate",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.subsidy_standard AS "subsidyStandard",
+		a.isdo AS "isDo"
+	</sql>
+	
+	<sql id="sysUserComputerSubsidiesApplyJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserComputerSubsidiesApply" >
+		SELECT 
+			<include refid="sysUserComputerSubsidiesApplyColumns"/>
+		FROM sys_user_computer_subsidies_apply a
+		<include refid="sysUserComputerSubsidiesApplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserComputerSubsidiesApply" >
+		SELECT 
+			<include refid="sysUserComputerSubsidiesApplyColumns"/>
+		FROM sys_user_computer_subsidies_apply a
+		<include refid="sysUserComputerSubsidiesApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserComputerSubsidiesApply" >
+		SELECT 
+			<include refid="sysUserComputerSubsidiesApplyColumns"/>
+		FROM sys_user_computer_subsidies_apply a
+		<include refid="sysUserComputerSubsidiesApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_computer_subsidies_apply(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			computer_configuration,
+			computer_serial_number,
+			buy_date,
+			begin_date,
+			end_date,
+			subsidy_standard,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{computerConfiguration},
+			#{computerSerialNumber},
+			#{buyDate},
+			#{beginDate},
+			#{endDate},
+			#{subsidyStandard},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_computer_subsidies_apply_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			computer_configuration,
+			computer_serial_number,
+			buy_date,
+			begin_date,
+			end_date,
+			subsidy_standard,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{computerConfiguration},
+			#{computerSerialNumber},
+			#{buyDate},
+			#{beginDate},
+			#{endDate},
+			#{subsidyStandard},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_computer_subsidies_apply SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			computer_configuration = #{computerConfiguration},
+			computer_serial_number = #{computerSerialNumber},
+			buy_date = #{buyDate},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			subsidy_standard = #{subsidyStandard},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_computer_subsidies_apply
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_computer_subsidies_apply SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserComputerSubsidiesApply" statementType="STATEMENT">
+		select * FROM sys_user_computer_subsidies_apply  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserComputerSubsidiesApply" >
+		SELECT 
+			<include refid="sysUserComputerSubsidiesApplyColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_computer_subsidies_apply a
+		<include refid="sysUserComputerSubsidiesApplyJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserComputerSubsidiesApply.DEL_FLAG_NORMAL}
+			${sysUserComputerSubsidiesApply.sqlMap.dsf}
+			<!--
+			<if test="sysUserComputerSubsidiesApply.ownerCode != null and sysUserComputerSubsidiesApply.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserComputerSubsidiesApply.dbName == 'oracle'">#{sysUserComputerSubsidiesApply.ownerCode}||'%'</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'mssql'">#{sysUserComputerSubsidiesApply.ownerCode}+'%'</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'mysql'">concat(#{sysUserComputerSubsidiesApply.ownerCode},'%')</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'dm'">concat(#{sysUserComputerSubsidiesApply.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserComputerSubsidiesApply.page !=null and sysUserComputerSubsidiesApply.page.orderBy != null and sysUserComputerSubsidiesApply.page.orderBy != ''">
+				ORDER BY ${sysUserComputerSubsidiesApply.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserComputerSubsidiesApply" >
+		SELECT 
+			<include refid="sysUserComputerSubsidiesApplyColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_computer_subsidies_apply a
+		<include refid="sysUserComputerSubsidiesApplyJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserComputerSubsidiesApply.DEL_FLAG_NORMAL}
+			${sysUserComputerSubsidiesApply.sqlMap.dsf}
+			<!--
+			<if test="sysUserComputerSubsidiesApply.ownerCode != null and sysUserComputerSubsidiesApply.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserComputerSubsidiesApply.dbName == 'oracle'">#{sysUserComputerSubsidiesApply.ownerCode}||'%'</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'mssql'">#{sysUserComputerSubsidiesApply.ownerCode}+'%'</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'mysql'">concat(#{sysUserComputerSubsidiesApply.ownerCode},'%')</if>
+				<if test="sysUserComputerSubsidiesApply.dbName == 'dm'">concat(#{sysUserComputerSubsidiesApply.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserComputerSubsidiesApply.page !=null and sysUserComputerSubsidiesApply.page.orderBy != null and sysUserComputerSubsidiesApply.page.orderBy != ''">
+				ORDER BY ${sysUserComputerSubsidiesApply.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

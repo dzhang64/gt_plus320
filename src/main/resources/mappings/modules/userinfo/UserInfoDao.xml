@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.userinfo.dao.UserInfoDao">
+    
+	<sql id="userInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.name AS "name",
+		a.idcard_num AS "idCardNum",
+		a.photo AS "photo",
+		a.gender AS "gender",
+		a.native_place AS "nativePlace",
+		a.name_code AS "nameCode",
+		a.tel AS "tel",
+		a.office_id AS "office.id",
+		a.area_id AS "area.id",
+		a.socailsecurity_city AS "ssc.id",
+		a.salary_card_num AS "salaryCardNum",
+		a.coordinate_num AS "coordinateNum",
+		a.provident_num AS "providentNum",
+		a.user_status AS "userStatus",
+		a.user_type AS "userType",
+		a.commail AS "comMail",
+		a.salary_id AS "salary.id",
+		a.salary_level AS "salaryLevel",
+		a.own_email AS "ownEmail",
+		a.emergency_user_name AS "emergencyUserName",
+		a.emergency_user_relation AS "emergencyUserRelation",
+		a.emergency_user_phone AS "emergencyUserPhone",
+		a.address AS "address",
+		a.entry_date AS "entryDate",
+		a.service_year AS "serviceYear",
+		a.intern_begin_date AS "internBeginDate",
+		a.intern_end_date AS "internEndDate",
+		a.trial_begin_date AS "trialBeginDate",
+		a.trial_end_date AS "trialEndDate",
+		a.turn_positive_date AS "turnPositiveDate",
+		a.grade_school AS "gradeSchool",
+		a.major AS "major",
+		a.grade_day AS "gradeDay",
+		a.ed AS "ed",
+		a.bachelor AS "Bachelor",
+		a.foreignlanguage_level AS "foreignLanguageLevel",
+		a.contract_sart_date AS "contractSartDate",
+		a.contract_end_date AS "contractEndDate",
+		a.contract AS "contract",
+		a.contract_type AS "contractType",
+		a.contract_limit AS "contractLimit",
+		a.login_name AS "loginName",
+		a.grade_certificate AS "gradeCertificate",
+		a.idcard_file AS "idCardFile",
+		a.person_resume AS "personResume",
+		office.name AS "office.name",
+		area.name AS "area.name",
+		ssc.name AS "ssc.name",
+		salary.level AS "salary.level"
+	</sql>
+	
+	<sql id="userInfoJoins">
+		LEFT JOIN sys_office office ON office.id = a.office_id
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		LEFT JOIN sys_area ssc ON ssc.id = a.socailsecurity_city
+		LEFT JOIN salary_level salary ON salary.id = a.salary_id
+	</sql>
+	
+    
+	<select id="get" resultType="UserInfo" >
+		SELECT 
+			<include refid="userInfoColumns"/>
+		FROM sys_user_info a
+		<include refid="userInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="UserInfo" >
+		SELECT 
+			<include refid="userInfoColumns"/>
+		FROM sys_user_info a
+		<include refid="userInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name = #{loginName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserInfo" >
+		SELECT 
+			<include refid="userInfoColumns"/>
+		FROM sys_user_info a
+		<include refid="userInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name,
+			idcard_num,
+			photo,
+			gender,
+			native_place,
+			name_code,
+			tel,
+			office_id,
+			area_id,
+			socailsecurity_city,
+			salary_card_num,
+			coordinate_num,
+			provident_num,
+			user_status,
+			user_type,
+			commail,
+			salary_id,
+			salary_level,
+			own_email,
+			emergency_user_name,
+			emergency_user_relation,
+			emergency_user_phone,
+			address,
+			entry_date,
+			service_year,
+			intern_begin_date,
+			intern_end_date,
+			trial_begin_date,
+			trial_end_date,
+			turn_positive_date,
+			grade_school,
+			major,
+			grade_day,
+			ed,
+			bachelor,
+			foreignlanguage_level,
+			contract_sart_date,
+			contract_end_date,
+			contract,
+			contract_type,
+			contract_limit,
+			grade_certificate,
+			idcard_file,
+			login_name,
+			person_resume
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name},
+			#{idCardNum},
+			#{photo},
+			#{gender},
+			#{nativePlace},
+			#{nameCode},
+			#{tel},
+			#{office.id},
+			#{area.id},
+			#{ssc.id},
+			#{salaryCardNum},
+			#{coordinateNum},
+			#{providentNum},
+			#{userStatus},
+			#{userType},
+			#{comMail},
+			#{salary.id},
+			#{salaryLevel},
+			#{ownEmail},
+			#{emergencyUserName},
+			#{emergencyUserRelation},
+			#{emergencyUserPhone},
+			#{address},
+			#{entryDate},
+			#{serviceYear},
+			#{internBeginDate},
+			#{internEndDate},
+			#{trialBeginDate},
+			#{trialEndDate},
+			#{turnPositiveDate},
+			#{gradeSchool},
+			#{major},
+			#{gradeDay},
+			#{ed},
+			#{Bachelor},
+			#{foreignLanguageLevel},
+			#{contractSartDate},
+			#{contractEndDate},
+			#{contract},
+			#{contractType},
+			#{contractLimit},
+			#{gradeCertificate},
+			#{idCardFile},
+			#{loginName},
+			#{personResume}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_info_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name,
+			idcard_num,
+			photo,
+			gender,
+			native_place,
+			name_code,
+			tel,
+			office_id,
+			area_id,
+			socailsecurity_city,
+			salary_card_num,
+			coordinate_num,
+			provident_num,
+			user_status,
+			user_type,
+			commail,
+			salary_id,
+			salary_level,
+			own_email,
+			emergency_user_name,
+			emergency_user_relation,
+			emergency_user_phone,
+			address,
+			entry_date,
+			service_year,
+			intern_begin_date,
+			intern_end_date,
+			trial_begin_date,
+			trial_end_date,
+			turn_positive_date,
+			grade_school,
+			major,
+			grade_day,
+			ed,
+			bachelor,
+			foreignlanguage_level,
+			contract_sart_date,
+			contract_end_date,
+			contract,
+			contract_type,
+			contract_limit,
+			grade_certificate,
+			idcard_file,
+			login_name,
+			person_resume
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name},
+			#{idCardNum},
+			#{photo},
+			#{gender},
+			#{nativePlace},
+			#{nameCode},
+			#{tel},
+			#{office.id},
+			#{area.id},
+			#{ssc.id},
+			#{salaryCardNum},
+			#{coordinateNum},
+			#{providentNum},
+			#{userStatus},
+			#{userType},
+			#{comMail},
+			#{salary.id},
+			#{salaryLevel},
+			#{ownEmail},
+			#{emergencyUserName},
+			#{emergencyUserRelation},
+			#{emergencyUserPhone},
+			#{address},
+			#{entryDate},
+			#{serviceYear},
+			#{internBeginDate},
+			#{internEndDate},
+			#{trialBeginDate},
+			#{trialEndDate},
+			#{turnPositiveDate},
+			#{gradeSchool},
+			#{major},
+			#{gradeDay},
+			#{ed},
+			#{Bachelor},
+			#{foreignLanguageLevel},
+			#{contractSartDate},
+			#{contractEndDate},
+			#{contract},
+			#{contractType},
+			#{contractLimit},
+			#{gradeCertificate},
+			#{idCardFile},
+			#{loginName},
+			#{personResume}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			name = #{name},
+			idcard_num = #{idCardNum},
+			photo = #{photo},
+			gender = #{gender},
+			native_place = #{nativePlace},
+			name_code = #{nameCode},
+			tel = #{tel},
+			office_id = #{office.id},
+			area_id = #{area.id},
+			socailsecurity_city = #{ssc.id},
+			salary_card_num = #{salaryCardNum},
+			coordinate_num = #{coordinateNum},
+			provident_num = #{providentNum},
+			user_status = #{userStatus},
+			user_type = #{userType},
+			commail = #{comMail},
+			salary_id = #{salary.id},
+			salary_level = #{salaryLevel},
+			own_email = #{ownEmail},
+			emergency_user_name = #{emergencyUserName},
+			emergency_user_relation = #{emergencyUserRelation},
+			emergency_user_phone = #{emergencyUserPhone},
+			address = #{address},
+			entry_date = #{entryDate},
+			service_year = #{serviceYear},
+			intern_begin_date = #{internBeginDate},
+			intern_end_date = #{internEndDate},
+			trial_begin_date = #{trialBeginDate},
+			trial_end_date = #{trialEndDate},
+			turn_positive_date = #{turnPositiveDate},
+			grade_school = #{gradeSchool},
+			major = #{major},
+			grade_day = #{gradeDay},
+			ed = #{ed},
+			bachelor = #{Bachelor},
+			foreignlanguage_level = #{foreignLanguageLevel},
+			contract_sart_date = #{contractSartDate},
+			contract_end_date = #{contractEndDate},
+			contract = #{contract},
+			contract_type = #{contractType},
+			contract_limit = #{contractLimit},
+			grade_certificate = #{gradeCertificate},
+			idcard_file = #{idCardFile},
+			person_resume = #{personResume},
+			login_name =#{loginName}
+		WHERE id = #{id}
+	</update>
+	<update id="updateById">
+		UPDATE sys_user_info SET 	
+			user_type = #{userType},
+			salary_id = #{salaryId},
+			salary_level = #{salaryLevel},
+			user_status=#{userStatus},
+			turn_positive_date=#{turnTime}
+		WHERE id = #{userId}
+	</update>
+	<update id="updateDeflag">
+		UPDATE sys_user_info SET 	
+			del_flag='1'
+		WHERE id = #{id}
+	</update>
+	<update id="updateContractAndDate">
+		UPDATE sys_user_info SET 	
+			contract_sart_date = #{beginDate},
+			contract_end_date = #{endDate},
+			contract = #{contractNum},
+			contract_limit = #{contractLimit},
+			contract_type = #{contractType}
+		WHERE id = #{userId}
+	</update>
+	<update id="updateSalaryById">
+		UPDATE sys_user_info SET 	
+			salary_id = #{levelId},
+			salary_level = #{salary}
+		WHERE id = #{userId}
+	</update>
+	<update id="updateSscByuserId">
+		UPDATE sys_user_info SET 	
+		socailsecurity_city = #{ssc},
+			coordinate_num = #{coordinateNum},
+			provident_num = #{providentNum}	
+		WHERE id = #{userId}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserInfo" statementType="STATEMENT">
+		select * FROM sys_user_info  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 获取最后一个工号 -->
+	<select id="getLastUserCode" resultType="String">
+		SELECT SUBSTRING(name_code,3, 4 ) 
+			FROM sys_user_info
+			WHERE name_code = ( SELECT name_code FROM sys_user_info ORDER BY create_date DESC LIMIT 1) 
+	</select>
+
+	
+	<select id="findListBysalary" resultType="SalaryLevel">
+		SELECT 
+			*
+		FROM salary_level a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="level != null and level != ''">
+				AND a.level LIKE 
+				<if test="dbName == 'oracle'">#{level}||'%'</if>
+				<if test="dbName == 'mssql'">#{level}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{level},'%')</if>
+				<if test="dbName == 'dm'">concat(#{level},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findListByUserInfo" resultType="UserInfo">
+		SELECT 
+			<include refid="userInfoColumns"/>
+		FROM sys_user_info a
+		  <include refid="userInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+				<if test="dbName == 'oracle'">#{name}||'%'</if>
+				<if test="dbName == 'mssql'">#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{name},'%')</if>
+				<if test="dbName == 'dm'">concat(#{name},'%')</if>
+			</if>
+			<if test="userStatus != null and userStatus != ''">
+				AND a.user_status =
+				<if test="dbName == 'oracle'">#{userStatus}||'%'</if>
+				<if test="dbName == 'mssql'">#{userStatus}+'%'</if>
+				<if test="dbName == 'mysql'">#{userStatus}</if>
+				<if test="dbName == 'dm'">concat(#{userStatus},'%')</if>
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name =
+				<if test="dbName == 'oracle'">#{userStatus}||'%'</if>
+				<if test="dbName == 'mssql'">#{userStatus}+'%'</if>
+				<if test="dbName == 'mysql'">#{loginName}</if>
+				<if test="dbName == 'dm'">concat(#{userStatus},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+</mapper>

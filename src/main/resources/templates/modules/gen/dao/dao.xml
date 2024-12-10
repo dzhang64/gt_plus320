@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>dao</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/dao/${subModuleName}</filePath>
+	<fileName>${ClassName}Dao.java</fileName>
+	<content><![CDATA[
+/**
+ * Copyright &copy; 2015-2020 <a href="http://www.gt_plus.org/">Gt_Plus</a> All rights reserved.
+ */
+package ${packageName}.${moduleName}.dao<#if subModuleName != "">.${subModuleName}</#if>;
+
+<#list table.importGridJavaDaoList as i>
+import ${i};
+</#list>
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+import com.gt_plus.common.persistence.CrudDao;
+import com.gt_plus.common.persistence.annotation.MyBatisDao;
+import ${packageName}.${moduleName}.entity<#if subModuleName != "">.${subModuleName}</#if>.${ClassName};
+
+/**
+ * ${functionName}DAO接口
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@MyBatisDao
+public interface ${ClassName}Dao extends CrudDao<${ClassName}> {
+
+	<#list table.columnList as c>
+		<#-- 如果存在自定义java对象 -->
+			<#if c.tableName?? && c.tableName!="">
+	public List<${c.simpleJavaType}> findListBy${c.simpleJavaField}(${c.simpleJavaType} ${c.simpleJavaField});
+			</#if>
+	</#list>
+	
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	List<${ClassName}> findListByProc(@Param("${className}")${ClassName} ${className}, @Param("procInsIds")List<String> procInsIds);
+	
+	List<${ClassName}> findListByProcIsNull(@Param("${className}")${ClassName} ${className});
+	</#if>
+}]]>
+	</content>
+</template>

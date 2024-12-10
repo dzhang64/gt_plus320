@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.setting.SequenceDao">
+    
+	<sql id="sequenceColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.key AS "key",
+		a.name AS "name",
+		a.start_value AS "startValue",
+		a.current_value AS "currentValue",
+		a.next_value AS "nextValue",
+		a.year AS "year",
+		a.cycle_by_year AS "cycleByYear",
+		a.last_year_value AS "lastYearValue",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="sequenceJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Sequence" >
+		SELECT 
+			<include refid="sequenceColumns"/>
+		FROM oa_sequence a
+		<include refid="sequenceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Sequence" >
+		SELECT 
+			<include refid="sequenceColumns"/>
+		FROM oa_sequence a
+		<include refid="sequenceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="key != null and key != ''">
+				AND a.key = #{key}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Sequence" >
+		SELECT 
+			<include refid="sequenceColumns"/>
+		FROM oa_sequence a
+		<include refid="sequenceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_sequence(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			key,
+			name,
+			start_value,
+			current_value,
+			next_value,
+			year,
+			cycle_by_year,
+			last_year_value,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{key},
+			#{name},
+			#{startValue},
+			#{currentValue},
+			#{nextValue},
+			#{year},
+			#{cycleByYear},
+			#{lastYearValue},
+			#{remarks}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_sequence_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			key,
+			name,
+			start_value,
+			current_value,
+			next_value,
+			year,
+			cycle_by_year,
+			last_year_value,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{key},
+			#{name},
+			#{startValue},
+			#{currentValue},
+			#{nextValue},
+			#{year},
+			#{cycleByYear},
+			#{lastYearValue},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_sequence SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			owner_code = #{ownerCode},
+			key = #{key},
+			name = #{name},
+			start_value = #{startValue},
+			current_value = #{currentValue},
+			next_value = #{nextValue},
+			year = #{year},
+			cycle_by_year = #{cycleByYear},
+			last_year_value = #{lastYearValue},
+			remarks = #{remarks}
+		WHERE id = #{id}
+		<if test="confirmNextValue != null">
+		AND next_value = #{confirmNextValue}
+		AND next_value <![CDATA[ <= ]]> #{confrimNextValue}
+		</if>
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_sequence
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_sequence SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Sequence" statementType="STATEMENT">
+		select * FROM oa_sequence  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="getSequence" resultType="Sequence" >
+		SELECT 
+			<include refid="sequenceColumns"/>
+		FROM oa_sequence a
+		<include refid="sequenceJoins"/>
+		WHERE a.key = #{key}
+	</select>
+	
+</mapper>

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.meeting.MeetingDao">
+    
+	<sql id="meetingColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission",
+		a.meeting_name AS "meetingName",
+		a.meeting_site AS "meetingSite",
+		a.meeting_start_date AS "meetingStartDate",
+		a.meeting_end_date AS "meetingEndDate",
+		a.compere AS "compere",
+		a.participation_name AS "participationName",
+		a.file AS "file",
+		a.doc_file AS "docFile"
+	</sql>
+	
+	<sql id="meetingJoins">
+	</sql>
+	
+    <resultMap type="Meeting" id="MeetingResult" autoMapping="true">
+    	<result column="file" property="file"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    	<result column="docFile" property="docFile"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_meeting(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			meeting_name,
+			meeting_site,
+			meeting_start_date,
+			meeting_end_date,
+			compere,
+			participation_name,
+			file,
+			doc_file
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{meetingName},
+			#{meetingSite},
+			#{meetingStartDate},
+			#{meetingEndDate},
+			#{compere},
+			#{participationName},
+			#{file},
+			#{docFile}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_meeting_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			meeting_name,
+			meeting_site,
+			meeting_start_date,
+			meeting_end_date,
+			compere,
+			participation_name,
+			file,
+			doc_file
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{meetingName},
+			#{meetingSite},
+			#{meetingStartDate},
+			#{meetingEndDate},
+			#{compere},
+			#{participationName},
+			#{file},
+			#{docFile}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_meeting SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission},
+			meeting_name = #{meetingName},
+			meeting_site = #{meetingSite},
+			meeting_start_date = #{meetingStartDate},
+			meeting_end_date = #{meetingEndDate},
+			compere = #{compere},
+			participation_name = #{participationName},
+			file = #{file},
+			doc_file = #{docFile}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_meeting
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_meeting SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Meeting" statementType="STATEMENT">
+		select * FROM oa_meeting  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		<where>
+			a.del_flag = #{meeting.DEL_FLAG_NORMAL}
+			${meeting.sqlMap.dsf}
+			<!--
+			<if test="meeting.ownerCode != null and meeting.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="meeting.dbName == 'oracle'">#{meeting.ownerCode}||'%'</if>
+				<if test="meeting.dbName == 'mssql'">#{meeting.ownerCode}+'%'</if>
+				<if test="meeting.dbName == 'mysql'">concat(#{meeting.ownerCode},'%')</if>
+				<if test="meeting.dbName == 'dm'">concat(#{meeting.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="meeting.page !=null and meeting.page.orderBy != null and meeting.page.orderBy != ''">
+				ORDER BY ${meeting.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="pendingFindListByProc" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		<where>
+			a.del_flag = #{meeting.DEL_FLAG_NORMAL}
+			${meeting.sqlMap.dsf}
+			<!--
+			<if test="meeting.ownerCode != null and meeting.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="meeting.dbName == 'oracle'">#{meeting.ownerCode}||'%'</if>
+				<if test="meeting.dbName == 'mssql'">#{meeting.ownerCode}+'%'</if>
+				<if test="meeting.dbName == 'mysql'">concat(#{meeting.ownerCode},'%')</if>
+				<if test="meeting.dbName == 'dm'">concat(#{meeting.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+			<if test="meeting.dbName == 'oracle'"> AND SYSDATE <![CDATA[ < ]]> a.meeting_start_date </if>
+			<if test="meeting.dbName == 'mssql'"> AND GETDATE() <![CDATA[ < ]]> a.meeting_start_date </if>
+			<if test="meeting.dbName == 'mysql'"> AND SYSDATE() <![CDATA[ < ]]> a.meeting_start_date </if>
+			<if test="meeting.dbName == 'dm'"> AND SYSDATE <![CDATA[ < ]]> a.meeting_start_date </if>
+		</where>
+		<choose>
+			<when test="meeting.page !=null and meeting.page.orderBy != null and meeting.page.orderBy != ''">
+				ORDER BY ${meeting.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultMap="MeetingResult" >
+		SELECT 
+			<include refid="meetingColumns"/>
+		FROM oa_meeting a
+		<include refid="meetingJoins"/>
+		<where>
+			a.del_flag = #{meeting.DEL_FLAG_NORMAL}
+			${meeting.sqlMap.dsf}
+			<!--
+			<if test="meeting.ownerCode != null and meeting.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="meeting.dbName == 'oracle'">#{meeting.ownerCode}||'%'</if>
+				<if test="meeting.dbName == 'mssql'">#{meeting.ownerCode}+'%'</if>
+				<if test="meeting.dbName == 'mysql'">concat(#{meeting.ownerCode},'%')</if>
+				<if test="meeting.dbName == 'dm'">concat(#{meeting.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="meeting.page !=null and meeting.page.orderBy != null and meeting.page.orderBy != ''">
+				ORDER BY ${meeting.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysusertransferapplication.dao.SysUserTransferApplicationDao">
+    
+	<sql id="sysUserTransferApplicationColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.name_id AS "name.id",
+		a.adjust_time AS "adjustTime",
+		a.name_code AS "nameCode",
+		a.office_name AS "officeName",
+		a.before_salary_id AS "beforeSalaryId",
+		a.before_salary_level AS "beforeSalaryLevel",
+		a.after_salary_id AS "afterSalary.id",
+		a.after_salary_level AS "afterSalaryLevel",
+		a.remarks AS "remarks",
+		a.isdo AS "isDo",
+		name.name AS "name.name",
+		afterSalary.level AS "afterSalary.level"
+	</sql>
+	
+	<sql id="sysUserTransferApplicationJoins">
+		LEFT JOIN sys_user_info name ON name.id = a.name_id
+		LEFT JOIN salary_level afterSalary ON afterSalary.id = a.after_salary_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserTransferApplication" >
+		SELECT 
+			<include refid="sysUserTransferApplicationColumns"/>
+		FROM sys_user_transfer_application a
+		<include refid="sysUserTransferApplicationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserTransferApplication" >
+		SELECT 
+			<include refid="sysUserTransferApplicationColumns"/>
+		FROM sys_user_transfer_application a
+		<include refid="sysUserTransferApplicationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserTransferApplication" >
+		SELECT 
+			<include refid="sysUserTransferApplicationColumns"/>
+		FROM sys_user_transfer_application a
+		<include refid="sysUserTransferApplicationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_transfer_application(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			adjust_time,
+			name_code,
+			office_name,
+			before_salary_id,
+			before_salary_level,
+			after_salary_id,
+			after_salary_level,
+			remarks,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{adjustTime},
+			#{nameCode},
+			#{officeName},
+			#{beforeSalaryId},
+			#{beforeSalaryLevel},
+			#{afterSalary.id},
+			#{afterSalaryLevel},
+			#{remarks},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_transfer_application_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			adjust_time,
+			name_code,
+			office_name,
+			before_salary_id,
+			before_salary_level,
+			after_salary_id,
+			after_salary_level,
+			remarks,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{adjustTime},
+			#{nameCode},
+			#{officeName},
+			#{beforeSalaryId},
+			#{beforeSalaryLevel},
+			#{afterSalary.id},
+			#{afterSalaryLevel},
+			#{remarks},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_transfer_application SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			name_id = #{name.id},
+			adjust_time = #{adjustTime},
+			name_code = #{nameCode},
+			office_name = #{officeName},
+			before_salary_id = #{beforeSalaryId},
+			before_salary_level = #{beforeSalaryLevel},
+			after_salary_id = #{afterSalary.id},
+			after_salary_level = #{afterSalaryLevel},
+			remarks = #{remarks},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_transfer_application
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_transfer_application SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserTransferApplication" statementType="STATEMENT">
+		select * FROM sys_user_transfer_application  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserTransferApplication" >
+		SELECT 
+			<include refid="sysUserTransferApplicationColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_transfer_application a
+		<include refid="sysUserTransferApplicationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserTransferApplication.DEL_FLAG_NORMAL}
+			${sysUserTransferApplication.sqlMap.dsf}
+			<!--
+			<if test="sysUserTransferApplication.ownerCode != null and sysUserTransferApplication.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserTransferApplication.dbName == 'oracle'">#{sysUserTransferApplication.ownerCode}||'%'</if>
+				<if test="sysUserTransferApplication.dbName == 'mssql'">#{sysUserTransferApplication.ownerCode}+'%'</if>
+				<if test="sysUserTransferApplication.dbName == 'mysql'">concat(#{sysUserTransferApplication.ownerCode},'%')</if>
+				<if test="sysUserTransferApplication.dbName == 'dm'">concat(#{sysUserTransferApplication.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserTransferApplication.page !=null and sysUserTransferApplication.page.orderBy != null and sysUserTransferApplication.page.orderBy != ''">
+				ORDER BY ${sysUserTransferApplication.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserTransferApplication" >
+		SELECT 
+			<include refid="sysUserTransferApplicationColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_transfer_application a
+		<include refid="sysUserTransferApplicationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserTransferApplication.DEL_FLAG_NORMAL}
+			${sysUserTransferApplication.sqlMap.dsf}
+			<!--
+			<if test="sysUserTransferApplication.ownerCode != null and sysUserTransferApplication.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserTransferApplication.dbName == 'oracle'">#{sysUserTransferApplication.ownerCode}||'%'</if>
+				<if test="sysUserTransferApplication.dbName == 'mssql'">#{sysUserTransferApplication.ownerCode}+'%'</if>
+				<if test="sysUserTransferApplication.dbName == 'mysql'">concat(#{sysUserTransferApplication.ownerCode},'%')</if>
+				<if test="sysUserTransferApplication.dbName == 'dm'">concat(#{sysUserTransferApplication.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserTransferApplication.page !=null and sysUserTransferApplication.page.orderBy != null and sysUserTransferApplication.page.orderBy != ''">
+				ORDER BY ${sysUserTransferApplication.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

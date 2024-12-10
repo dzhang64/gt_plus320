@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.projectbg.dao.bgentry.ProjectBgEntryDao">
+
+    <resultMap id="projectBgEntryResult" type="ProjectBgEntry">
+   		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="sort" column="sort" />
+		<result property="parentIds" column="parentIds" />
+		<result property="ownerCode" column="ownerCode" />
+		<association property="hasChildren" column="id" select="hasChildren" />
+    </resultMap>
+    
+	<sql id="projectBgEntryColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="projectBgEntryJoins">
+		
+	</sql>
+	
+	<select id="get" resultType="ProjectBgEntry">
+		SELECT 
+			<include refid="projectBgEntryColumns"/>
+		FROM project_bg_entry a
+		<include refid="projectBgEntryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProjectBgEntry">
+		SELECT 
+			<include refid="projectBgEntryColumns"/>
+		FROM project_bg_entry a
+		<include refid="projectBgEntryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{parentIds},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="ProjectBgEntry">
+		SELECT 
+			<include refid="projectBgEntryColumns"/>
+		FROM project_bg_entry a
+		<include refid="projectBgEntryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="getChildren" parameterType="String" resultType="ProjectBgEntry">  
+        select * from project_bg_entry where parent_id = #{id} ORDER BY sort 
+    </select> 
+     
+    <select id="hasChildren" parameterType="String" resultType="Boolean">  
+        select exists(select 1 from project_bg_entry where parent_id = #{id})
+    </select>
+    
+	<select id="findByParentIdsLike" resultType="ProjectBgEntry">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM project_bg_entry a
+		<include refid="projectBgEntryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO project_bg_entry(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			parent_id,
+			parent_ids,
+			name,
+			sort
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO project_bg_entry_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			parent_id,
+			parent_ids,
+			name,
+			sort
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE project_bg_entry SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE project_bg_entry SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM project_bg_entry
+		WHERE id = #{id} OR parent_ids LIKE 
+		<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+        <if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+        <if test="dbName == 'dm'">CONCAT('%',#{id},',%')</if>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE project_bg_entry SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+		<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+        <if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+        <if test="dbName == 'dm'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+</mapper>

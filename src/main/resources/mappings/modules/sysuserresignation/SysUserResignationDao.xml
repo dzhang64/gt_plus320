@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysuserresignation.dao.SysUserResignationDao">
+    
+	<sql id="sysUserResignationColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.name_id AS "name.id",
+		a.office_id AS "officeId",
+		a.leave_date AS "leaveDate",
+		a.leave_reason AS "leaveReason",
+		a.leave_type AS "leaveType",
+		a.transfer_equipment AS "transferEquipment",
+		a.no_transfer AS "noTransfer",
+		a.certification_deduction AS "certificationDeduction",
+		a.no_salary_pay AS "noSalaryPay",
+		a.no_reimbursement AS "noReimbursement",
+		a.loan_amount AS "loanAmount",
+		a.amount_sum AS "amountSum",
+		a.leave_sum AS "leaveSum",
+		a.isdo AS "isDo",
+		name.name AS "name.name"
+	</sql>
+	
+	<sql id="sysUserResignationJoins">
+		LEFT JOIN sys_user_info name ON name.id = a.name_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserResignation" >
+		SELECT 
+			<include refid="sysUserResignationColumns"/>
+		FROM sys_user_resignation a
+		<include refid="sysUserResignationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserResignation" >
+		SELECT 
+			<include refid="sysUserResignationColumns"/>
+		FROM sys_user_resignation a
+		<include refid="sysUserResignationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserResignation" >
+		SELECT 
+			<include refid="sysUserResignationColumns"/>
+		FROM sys_user_resignation a
+		<include refid="sysUserResignationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_resignation(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			office_id,
+			leave_date,
+			leave_reason,
+			leave_type,
+			transfer_equipment,
+			no_transfer,
+			certification_deduction,
+			no_salary_pay,
+			no_reimbursement,
+			loan_amount,
+			amount_sum,
+			leave_sum,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{officeId},
+			#{leaveDate},
+			#{leaveReason},
+			#{leaveType},
+			#{transferEquipment},
+			#{noTransfer},
+			#{certificationDeduction},
+			#{noSalaryPay},
+			#{noReimbursement},
+			#{loanAmount},
+			#{amountSum},
+			#{leaveSum},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_resignation_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			office_id,
+			leave_date,
+			leave_reason,
+			leave_type,
+			transfer_equipment,
+			no_transfer,
+			certification_deduction,
+			no_salary_pay,
+			no_reimbursement,
+			loan_amount,
+			amount_sum,
+			leave_sum,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{officeId},
+			#{leaveDate},
+			#{leaveReason},
+			#{leaveType},
+			#{transferEquipment},
+			#{noTransfer},
+			#{certificationDeduction},
+			#{noSalaryPay},
+			#{noReimbursement},
+			#{loanAmount},
+			#{amountSum},
+			#{leaveSum},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_resignation SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			name_id = #{name.id},
+			office_id = #{officeId},
+			leave_date = #{leaveDate},
+			leave_reason = #{leaveReason},
+			leave_type = #{leaveType},
+			transfer_equipment = #{transferEquipment},
+			no_transfer = #{noTransfer},
+			certification_deduction = #{certificationDeduction},
+			no_salary_pay = #{noSalaryPay},
+			no_reimbursement = #{noReimbursement},
+			loan_amount = #{loanAmount},
+			amount_sum = #{amountSum},
+			leave_sum = #{leaveSum},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_resignation
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_resignation SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserResignation" statementType="STATEMENT">
+		select * FROM sys_user_resignation  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserResignation" >
+		SELECT 
+			<include refid="sysUserResignationColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_resignation a
+		<include refid="sysUserResignationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserResignation.DEL_FLAG_NORMAL}
+			${sysUserResignation.sqlMap.dsf}
+			<!--
+			<if test="sysUserResignation.ownerCode != null and sysUserResignation.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserResignation.dbName == 'oracle'">#{sysUserResignation.ownerCode}||'%'</if>
+				<if test="sysUserResignation.dbName == 'mssql'">#{sysUserResignation.ownerCode}+'%'</if>
+				<if test="sysUserResignation.dbName == 'mysql'">concat(#{sysUserResignation.ownerCode},'%')</if>
+				<if test="sysUserResignation.dbName == 'dm'">concat(#{sysUserResignation.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserResignation.page !=null and sysUserResignation.page.orderBy != null and sysUserResignation.page.orderBy != ''">
+				ORDER BY ${sysUserResignation.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserResignation" >
+		SELECT 
+			<include refid="sysUserResignationColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_resignation a
+		<include refid="sysUserResignationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserResignation.DEL_FLAG_NORMAL}
+			${sysUserResignation.sqlMap.dsf}
+			<!--
+			<if test="sysUserResignation.ownerCode != null and sysUserResignation.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserResignation.dbName == 'oracle'">#{sysUserResignation.ownerCode}||'%'</if>
+				<if test="sysUserResignation.dbName == 'mssql'">#{sysUserResignation.ownerCode}+'%'</if>
+				<if test="sysUserResignation.dbName == 'mysql'">concat(#{sysUserResignation.ownerCode},'%')</if>
+				<if test="sysUserResignation.dbName == 'dm'">concat(#{sysUserResignation.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserResignation.page !=null and sysUserResignation.page.orderBy != null and sysUserResignation.page.orderBy != ''">
+				ORDER BY ${sysUserResignation.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

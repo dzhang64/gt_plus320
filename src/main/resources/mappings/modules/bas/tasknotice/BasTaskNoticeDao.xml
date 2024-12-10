@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.bas.dao.tasknotice.BasTaskNoticeDao">
+    
+	<sql id="basTaskNoticeColumns">
+		a.id AS "id",
+		a.message_id AS "messageId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.content AS "content",
+		a.user_id AS "userId",
+		a.user_name AS "userName",
+		a.create_user_name AS "createUserName",
+		a.office_name AS "officeName",
+		a.status AS "status",
+		a.types AS "types",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="basTaskNoticeJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="BasTaskNotice" >
+		SELECT 
+			<include refid="basTaskNoticeColumns"/>
+		FROM bas_task_notice a
+		<include refid="basTaskNoticeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BasTaskNotice" >
+		SELECT 
+			<include refid="basTaskNoticeColumns"/>
+		FROM bas_task_notice a
+		<include refid="basTaskNoticeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="messageId != null and messageId != ''">
+				AND a.message_id = #{messageId}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content LIKE 
+					<if test="dbName == 'oracle'">'%'||#{content}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{content}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{content},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{content},'%')</if>
+			</if>
+			<if test="userName != null and userName != ''">
+				AND a.user_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{userName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{userName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{userName},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{userName},'%')</if>
+			</if>
+			<if test="officeName != null and officeName != ''">
+				AND a.office_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{officeName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{officeName},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{officeName},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="types != null and types != ''">
+				AND a.types LIKE 
+					<if test="dbName == 'oracle'">#{types}||'%'</if>
+					<if test="dbName == 'mssql'">#{types}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{types},'%')</if>
+					<if test="dbName == 'dm'">concat(#{types},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.status
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BasTaskNotice" >
+		SELECT 
+			<include refid="basTaskNoticeColumns"/>
+		FROM bas_task_notice a
+		<include refid="basTaskNoticeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO bas_task_notice(
+			id,
+			message_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			content,
+			user_id,
+			user_name,
+			create_user_name,
+			office_name,
+			status,
+			types,
+			remarks
+		) VALUES (
+			#{id},
+			#{messageId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{content},
+			#{userId},
+			#{userName},
+			#{createUserName},
+			#{officeName},
+			#{status},
+			#{types},
+			#{remarks}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO bas_task_notice_V(
+			id,
+			message_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			content,
+			user_id,
+			user_name,
+			create_user_name,
+			office_name,
+			status,
+			types,
+			remarks
+		) VALUES (
+			#{id},
+			#{messageId},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{content},
+			#{userId},
+			#{userName},
+			#{createUserName},
+			#{officeName},
+			#{status},
+			#{types},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE bas_task_notice SET 	
+			message_id = #{messageId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			content = #{content},
+			user_id = #{userId},
+			user_name = #{userName},
+			create_user_name = #{createUserName},
+			office_name = #{officeName},
+			status = #{status},
+			types = #{types},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM bas_task_notice
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE bas_task_notice SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="BasTaskNotice" statementType="STATEMENT">
+		select * FROM bas_task_notice  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

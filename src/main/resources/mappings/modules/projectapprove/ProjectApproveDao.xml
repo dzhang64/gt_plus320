@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.projectapprove.dao.ProjectApproveDao">
+    
+	<sql id="projectApproveColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+	    a.proc_task_permission_id AS "procTaskPermission.id",
+		a.project_name AS "projectName",
+		a.project_num AS "projectNum",
+		a.project_attribute AS "projectAttribute",
+		a.project_type AS "projectType",
+		a.product_type AS "productType",
+		a.area_id AS "area.id",
+		a.office_id AS "office.id",
+		a.device_company AS "deviceCompany",
+		a.cooperative AS "cooperative",
+		a.operator AS "operator",
+		a.contract_amount AS "contractAmount",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.projectmanager_id AS "projectmanager.id",
+		a.attach_file AS "attachfile",
+		a.attach_message AS "attachmessage",
+		a.isdo AS "isDo",
+		area.name AS "area.name",
+		office.name AS "office.name",
+		projectmanager.name AS "projectmanager.name"
+	</sql>
+	
+	<sql id="projectApproveJoins">
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		LEFT JOIN sys_office office ON office.id = a.office_id
+		LEFT JOIN sys_user_info projectmanager ON projectmanager.id = a.projectmanager_id
+	</sql>
+	
+    
+	<select id="get" resultType="ProjectApprove" >
+		SELECT 
+			<include refid="projectApproveColumns"/>
+		FROM project_approve a
+		<include refid="projectApproveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProjectApprove" >
+		SELECT 
+			<include refid="projectApproveColumns"/>
+		FROM project_approve a
+		<include refid="projectApproveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="projectName != null and projectName != ''">
+				AND a.project_name = #{projectName}
+			</if>
+			<if test="projectNum != null and projectNum != ''">
+				AND a.project_num = #{projectNum}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProjectApprove" >
+		SELECT 
+			<include refid="projectApproveColumns"/>
+		FROM project_approve a
+		<include refid="projectApproveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO project_approve(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission_id,
+			project_name,
+			project_num,
+			project_attribute,
+			project_type,
+			product_type,
+			area_id,
+			office_id,
+			device_company,
+			cooperative,
+			operator,
+			contract_amount,
+			start_time,
+			end_time,
+			projectmanager_id,
+			attach_file,
+			attach_message,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{projectName},
+			#{projectNum},
+			#{projectAttribute},
+			#{projectType},
+			#{productType},
+			#{area.id},
+			#{office.id},
+			#{deviceCompany},
+			#{cooperative},
+			#{operator},
+			#{contractAmount},
+			#{startTime},
+			#{endTime},
+			#{projectmanager.id},
+			#{attachfile},
+			#{attachmessage},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO project_approve_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission_id,
+			project_name,
+			project_num,
+			project_attribute,
+			project_type,
+			product_type,
+			area_id,
+			office_id,
+			device_company,
+			cooperative,
+			operator,
+			contract_amount,
+			start_time,
+			end_time,
+			projectmanager_id,
+			attach_file,
+			attach_message,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{projectName},
+			#{projectNum},
+			#{projectAttribute},
+			#{projectType},
+			#{productType},
+			#{area.id},
+			#{office.id},
+			#{deviceCompany},
+			#{cooperative},
+			#{operator},
+			#{contractAmount},
+			#{startTime},
+			#{endTime},
+			#{projectmanager.id},
+			#{attachfile},
+			#{attachmessage},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE project_approve SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission_id = #{procTaskPermission.id},
+			project_name = #{projectName},
+			project_num = #{projectNum},
+			project_attribute = #{projectAttribute},
+			project_type = #{projectType},
+			product_type = #{productType},
+			area_id = #{area.id},
+			office_id = #{office.id},
+			device_company = #{deviceCompany},
+			cooperative = #{cooperative},
+			operator = #{operator},
+			contract_amount = #{contractAmount},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			projectmanager_id = #{projectmanager.id},
+			attach_file = #{attachfile},
+			attach_message = #{attachmessage},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM project_approve
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE project_approve SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProjectApprove" statementType="STATEMENT">
+		select * FROM project_approve  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="ProjectApprove" >
+		SELECT 
+			<include refid="projectApproveColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM project_approve a
+		<include refid="projectApproveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission_id = tp.id 
+		<where>
+			a.del_flag = #{projectApprove.DEL_FLAG_NORMAL}
+			${projectApprove.sqlMap.dsf}
+			<!--
+			<if test="projectApprove.ownerCode != null and projectApprove.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="projectApprove.dbName == 'oracle'">#{projectApprove.ownerCode}||'%'</if>
+				<if test="projectApprove.dbName == 'mssql'">#{projectApprove.ownerCode}+'%'</if>
+				<if test="projectApprove.dbName == 'mysql'">concat(#{projectApprove.ownerCode},'%')</if>
+				<if test="projectApprove.dbName == 'dm'">concat(#{projectApprove.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="projectApprove.page !=null and projectApprove.page.orderBy != null and projectApprove.page.orderBy != ''">
+				ORDER BY ${projectApprove.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="ProjectApprove" >
+		SELECT 
+			<include refid="projectApproveColumns"/>
+			,u.name AS "createBy.name"
+		FROM project_approve a
+		<include refid="projectApproveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{projectApprove.DEL_FLAG_NORMAL}
+			${projectApprove.sqlMap.dsf}
+			<!--
+			<if test="projectApprove.ownerCode != null and projectApprove.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="projectApprove.dbName == 'oracle'">#{projectApprove.ownerCode}||'%'</if>
+				<if test="projectApprove.dbName == 'mssql'">#{projectApprove.ownerCode}+'%'</if>
+				<if test="projectApprove.dbName == 'mysql'">concat(#{projectApprove.ownerCode},'%')</if>
+				<if test="projectApprove.dbName == 'dm'">concat(#{projectApprove.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="projectApprove.page !=null and projectApprove.page.orderBy != null and projectApprove.page.orderBy != ''">
+				ORDER BY ${projectApprove.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

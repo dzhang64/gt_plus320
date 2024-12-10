@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysuserinterntranscription.dao.SysUserInternTranscriptionDao">
+    
+	<sql id="sysUserInternTranscriptionColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.name_id AS "name.id",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.ssc_id AS "ssc.id",
+		a.user_status AS "userStatus",
+		a.user_type AS "userType",
+		a.begin_date AS "beginDate",
+		a.level_id AS "level.id",
+		a.salary_level AS "salaryLevel",
+		a.isdo AS "isDo",
+		a.transcription_table AS "transcriptionTable",
+		a.grade_certificate AS "gradeCertificate",
+		name.name AS "name.name",
+		ssc.name AS "ssc.name",
+		level.level AS "level.level"
+	</sql>
+	
+	<sql id="sysUserInternTranscriptionJoins">
+		LEFT JOIN sys_user_info name ON name.id = a.name_id
+		LEFT JOIN sys_area ssc ON ssc.id = a.ssc_id
+		LEFT JOIN salary_level level ON level.id = a.level_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserInternTranscription" >
+		SELECT 
+			<include refid="sysUserInternTranscriptionColumns"/>
+		FROM sys_user_intern_transcription a
+		<include refid="sysUserInternTranscriptionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserInternTranscription" >
+		SELECT 
+			<include refid="sysUserInternTranscriptionColumns"/>
+		FROM sys_user_intern_transcription a
+		<include refid="sysUserInternTranscriptionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserInternTranscription" >
+		SELECT 
+			<include refid="sysUserInternTranscriptionColumns"/>
+		FROM sys_user_intern_transcription a
+		<include refid="sysUserInternTranscriptionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_intern_transcription(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			start_time,
+			end_time,
+			ssc_id,
+			user_status,
+			user_type,
+			begin_date,
+			level_id,
+			salary_level,
+			isdo,
+			transcription_table,
+			grade_certificate
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{startTime},
+			#{endTime},
+			#{ssc.id},
+			#{userStatus},
+			#{userType},
+			#{beginDate},
+			#{level.id},
+			#{salaryLevel},
+			#{isDo},
+			#{transcriptionTable},
+			#{gradeCertificate}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_intern_transcription_v(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			start_time,
+			end_time,
+			ssc_id,
+			user_status,
+			user_type,
+			begin_date,
+			level_id,
+			salary_level,
+			isdo,
+			transcription_table,
+			grade_certificate
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{startTime},
+			#{endTime},
+			#{ssc.id},
+			#{userStatus},
+			#{userType},
+			#{beginDate},
+			#{level.id},
+			#{salaryLevel},
+			#{isDo},
+			#{transcriptionTable},
+			#{gradeCertificate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_intern_transcription SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			name_id = #{name.id},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			ssc_id = #{ssc.id},
+			user_status = #{userStatus},
+			user_type = #{userType},
+			begin_date = #{beginDate},
+			level_id = #{level.id},
+			salary_level = #{salaryLevel},
+			isdo = #{isDo},
+			transcription_table = #{transcriptionTable},
+			grade_certificate = #{gradeCertificate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_intern_transcription
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_intern_transcription SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserInternTranscription" statementType="STATEMENT">
+		select * FROM sys_user_intern_transcription  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserInternTranscription" >
+		SELECT 
+			<include refid="sysUserInternTranscriptionColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_intern_transcription a
+		<include refid="sysUserInternTranscriptionJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserInternTranscription.DEL_FLAG_NORMAL}
+			${sysUserInternTranscription.sqlMap.dsf}
+			<!--
+			<if test="sysUserInternTranscription.ownerCode != null and sysUserInternTranscription.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserInternTranscription.dbName == 'oracle'">#{sysUserInternTranscription.ownerCode}||'%'</if>
+				<if test="sysUserInternTranscription.dbName == 'mssql'">#{sysUserInternTranscription.ownerCode}+'%'</if>
+				<if test="sysUserInternTranscription.dbName == 'mysql'">concat(#{sysUserInternTranscription.ownerCode},'%')</if>
+				<if test="sysUserInternTranscription.dbName == 'dm'">concat(#{sysUserInternTranscription.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserInternTranscription.page !=null and sysUserInternTranscription.page.orderBy != null and sysUserInternTranscription.page.orderBy != ''">
+				ORDER BY ${sysUserInternTranscription.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserInternTranscription" >
+		SELECT 
+			<include refid="sysUserInternTranscriptionColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_intern_transcription a
+		<include refid="sysUserInternTranscriptionJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserInternTranscription.DEL_FLAG_NORMAL}
+			${sysUserInternTranscription.sqlMap.dsf}
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserInternTranscription.page !=null and sysUserInternTranscription.page.orderBy != null and sysUserInternTranscription.page.orderBy != ''">
+				ORDER BY ${sysUserInternTranscription.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

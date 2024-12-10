@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sys.dao.SsoSubsystemDao">
+    
+	<sql id="ssoSubsystemColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.name AS "name",
+		a.org AS "org.id",
+		a.url AS "url",
+		a.ca_url AS "caUrl",
+		a.is_inuse AS "isInuse",
+		a.is_sync AS "isSync",
+		a.key AS "key",
+		org.name AS "org.name"
+	</sql>
+	
+	<sql id="ssoSubsystemJoins">
+		LEFT JOIN sys_office org ON org.id = a.org
+	</sql>
+	
+    
+	<select id="get" resultType="SsoSubsystem" >
+		SELECT 
+			<include refid="ssoSubsystemColumns"/>
+		FROM sys_sso_subsystem a
+		<include refid="ssoSubsystemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SsoSubsystem" >
+		SELECT 
+			<include refid="ssoSubsystemColumns"/>
+		FROM sys_sso_subsystem a
+		<include refid="ssoSubsystemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="org != null and org.id != null and org.id != ''">
+				AND a.org LIKE 
+					<if test="dbName == 'oracle'">'%'||#{org.id}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{org.id}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{org.id},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{org.id},'%')</if>
+			</if>
+			<if test="url != null and url != ''">
+				AND a.url LIKE 
+					<if test="dbName == 'oracle'">'%'||#{url}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{url}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{url},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{url},'%')</if>
+			</if>
+			<if test="caUrl != null and caUrl != ''">
+				AND a.ca_url LIKE 
+					<if test="dbName == 'oracle'">'%'||#{caUrl}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{caUrl}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{caUrl},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{caUrl},'%')</if>
+			</if>
+			<if test="isInuse != null and isInuse != ''">
+				AND a.is_inuse = #{isInuse}
+			</if>
+			<if test="isSync != null and isSync != ''">
+				AND a.is_sync = #{isSync}
+			</if>
+			<if test="key != null and key != ''">
+				AND a.key LIKE 
+					<if test="dbName == 'oracle'">'%'||#{key}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{key}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{key},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{key},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SsoSubsystem" >
+		SELECT 
+			<include refid="ssoSubsystemColumns"/>
+		FROM sys_sso_subsystem a
+		<include refid="ssoSubsystemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_sso_subsystem(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name,
+			org,
+			url,
+			ca_url,
+			is_inuse,
+			is_sync,
+			key
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name},
+			#{org.id},
+			#{url},
+			#{caUrl},
+			#{isInuse},
+			#{isSync},
+			#{key}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_sso_subsystem_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name,
+			org,
+			url,
+			ca_url,
+			is_inuse,
+			is_sync,
+			key
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name},
+			#{org.id},
+			#{url},
+			#{caUrl},
+			#{isInuse},
+			#{isSync},
+			#{key}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_sso_subsystem SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			name = #{name},
+			org = #{org.id},
+			url = #{url},
+			ca_url = #{caUrl},
+			is_inuse = #{isInuse},
+			is_sync = #{isSync},
+			key = #{key}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_sso_subsystem
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_sso_subsystem SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SsoSubsystem" statementType="STATEMENT">
+		select * FROM sys_sso_subsystem  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	
+</mapper>

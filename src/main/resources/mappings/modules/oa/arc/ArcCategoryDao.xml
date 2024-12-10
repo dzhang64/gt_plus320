@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.arc.ArcCategoryDao">
+
+    <resultMap id="arcCategoryResult" type="ArcCategory">
+   		<result property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="sort" column="sort" />
+		<result property="parentIds" column="parentIds" />
+		<result property="ownerCode" column="ownerCode" />
+		<association property="hasChildren" column="id" select="hasChildren" />
+    </resultMap>
+    
+	<sql id="arcCategoryColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="arcCategoryJoins">
+		
+	</sql>
+	
+	<select id="get" resultType="ArcCategory">
+		SELECT 
+			<include refid="arcCategoryColumns"/>
+		FROM oa_arc_category a
+		<include refid="arcCategoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ArcCategory">
+		SELECT 
+			<include refid="arcCategoryColumns"/>
+		FROM oa_arc_category a
+		<include refid="arcCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{parentIds},'%')</if>
+			</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="ArcCategory">
+		SELECT 
+			<include refid="arcCategoryColumns"/>
+		FROM oa_arc_category a
+		<include refid="arcCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="getChildren" parameterType="String" resultType="ArcCategory">  
+        select * from oa_arc_category where parent_id = #{id} ORDER BY sort 
+    </select> 
+     
+    <select id="hasChildren" parameterType="String" resultType="Boolean">  
+        select exists(select 1 from oa_arc_category where parent_id = #{id})
+    </select>
+    
+	<select id="findByParentIdsLike" resultType="ArcCategory">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM oa_arc_category a
+		<include refid="arcCategoryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_arc_category(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			parent_id,
+			parent_ids,
+			name,
+			sort,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort},
+			#{remarks}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_arc_category_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			parent_id,
+			parent_ids,
+			name,
+			sort,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{sort},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_arc_category SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			owner_code = #{ownerCode},
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			sort = #{sort},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE oa_arc_category SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_arc_category
+		WHERE id = #{id} OR parent_ids LIKE 
+		<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+        <if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+        <if test="dbName == 'dm'">CONCAT('%',#{id},',%')</if>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_arc_category SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+		<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+		<if test="dbName == 'mssql'">'%,'+#{id}+',%'</if>
+        <if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+        <if test="dbName == 'dm'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+</mapper>

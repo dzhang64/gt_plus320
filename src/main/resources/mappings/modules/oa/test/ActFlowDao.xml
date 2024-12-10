@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.test.ActFlowDao">
+    
+	<sql id="actFlowColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission"
+	</sql>
+	
+	<sql id="actFlowJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ActFlow" >
+		SELECT 
+			<include refid="actFlowColumns"/>
+		FROM oa_test_actflow a
+		<include refid="actFlowJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ActFlow" >
+		SELECT 
+			<include refid="actFlowColumns"/>
+		FROM oa_test_actflow a
+		<include refid="actFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ActFlow" >
+		SELECT 
+			<include refid="actFlowColumns"/>
+		FROM oa_test_actflow a
+		<include refid="actFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_test_actflow(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_test_actflow_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_test_actflow SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_test_actflow
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_test_actflow SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ActFlow" statementType="STATEMENT">
+		select * FROM oa_test_actflow  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="ActFlow" >
+		SELECT 
+			<include refid="actFlowColumns"/>
+		FROM oa_test_actflow a
+		<include refid="actFlowJoins"/>
+		<where>
+			a.del_flag = #{actFlow.DEL_FLAG_NORMAL}
+			${actFlow.sqlMap.dsf}
+			<!--
+			<if test="actFlow.ownerCode != null and actFlow.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="actFlow.dbName == 'oracle'">#{actFlow.ownerCode}||'%'</if>
+				<if test="actFlow.dbName == 'mssql'">#{actFlow.ownerCode}+'%'</if>
+				<if test="actFlow.dbName == 'mysql'">concat(#{actFlow.ownerCode},'%')</if>
+				<if test="actFlow.dbName == 'dm'">concat(#{actFlow.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="actFlow.page !=null and actFlow.page.orderBy != null and actFlow.page.orderBy != ''">
+				ORDER BY ${actFlow.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="ActFlow" >
+		SELECT 
+			<include refid="actFlowColumns"/>
+		FROM oa_test_actflow a
+		<include refid="actFlowJoins"/>
+		<where>
+			a.del_flag = #{actFlow.DEL_FLAG_NORMAL}
+			${actFlow.sqlMap.dsf}
+			<!--
+			<if test="actFlow.ownerCode != null and actFlow.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="actFlow.dbName == 'oracle'">#{actFlow.ownerCode}||'%'</if>
+				<if test="actFlow.dbName == 'mssql'">#{actFlow.ownerCode}+'%'</if>
+				<if test="actFlow.dbName == 'mysql'">concat(#{actFlow.ownerCode},'%')</if>
+				<if test="actFlow.dbName == 'dm'">concat(#{actFlow.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="actFlow.page !=null and actFlow.page.orderBy != null and actFlow.page.orderBy != ''">
+				ORDER BY ${actFlow.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.salarylevel.dao.SalaryLevelDao">
+    
+	<sql id="salaryLevelColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.level AS "level",
+		a.basic_wage AS "basicWage",
+		a.performance_pay AS "performancePay",
+		a.subsidy AS "subsidy"
+	</sql>
+	
+	<sql id="salaryLevelJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="SalaryLevel" >
+		SELECT 
+			<include refid="salaryLevelColumns"/>
+		FROM salary_level a
+		<include refid="salaryLevelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SalaryLevel" >
+		SELECT 
+			<include refid="salaryLevelColumns"/>
+		FROM salary_level a
+		<include refid="salaryLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findAllList" resultType="SalaryLevel" >
+		SELECT 
+			<include refid="salaryLevelColumns"/>
+		FROM salary_level a
+		<include refid="salaryLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListBysalary" resultType="SalaryLevel">
+		SELECT 
+			<include refid="salaryLevelColumns"/>
+		FROM salary_level a
+		<include refid="salaryLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="level != null and level != ''">
+				AND a.level LIKE 
+				<if test="dbName == 'oracle'">#{level}||'%'</if>
+				<if test="dbName == 'mssql'">#{level}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{level},'%')</if>
+				<if test="dbName == 'dm'">concat(#{level},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO salary_level(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			level,
+			basic_wage,
+			performance_pay,
+			subsidy
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{level},
+			#{basicWage},
+			#{performancePay},
+			#{subsidy}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO salary_level_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			level,
+			basic_wage,
+			performance_pay,
+			subsidy
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{level},
+			#{basicWage},
+			#{performancePay},
+			#{subsidy}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE salary_level SET 	
+			create_by = #{createBy.id},
+			create_date = #{createDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_flag = #{delFlag},
+			level = #{level},
+			basic_wage = #{basicWage},
+			performance_pay = #{performancePay},
+			subsidy = #{subsidy}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM salary_level
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE salary_level SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SalaryLevel" statementType="STATEMENT">
+		select * FROM salary_level  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	
+</mapper>

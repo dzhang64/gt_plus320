@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sys.dao.UserSsoSubsystemDao">
+    
+	<sql id="userSsoSubsystemColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.user_id AS "userId",
+		a.subsystem_id AS "ssoSubsystem.id",
+		a.login_name AS "loginName",
+		a.password AS "password",
+		a.is_allow AS "isAllow"
+	</sql>
+	
+	<sql id="userSsoSubsystemJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="UserSsoSubsystem" >
+		SELECT 
+			<include refid="userSsoSubsystemColumns"/>
+		FROM sys_user_sso_subsystem a
+		<include refid="userSsoSubsystemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="UserSsoSubsystem" >
+		SELECT 
+			<include refid="userSsoSubsystemColumns"/>
+		FROM sys_user_sso_subsystem a
+		<include refid="userSsoSubsystemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="ssoSubsystem != null and ssoSubsystem.id != null and ssoSubsystem.id != ''">
+				AND a.subsystem_id = #{ssoSubsystem.id}
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name = #{loginName}
+			</if>
+			<if test="password != null and password != ''">
+				AND a.password = #{password}
+			</if>
+			<if test="isAllow != null and isAllow != ''">
+				AND a.is_allow = #{isAllow}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserSsoSubsystem" >
+		SELECT 
+			<include refid="userSsoSubsystemColumns"/>
+		FROM sys_user_sso_subsystem a
+		<include refid="userSsoSubsystemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_sso_subsystem(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			user_id,
+			subsystem_id,
+			login_name,
+			password,
+			is_allow
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{userId},
+			#{ssoSubsystem.id},
+			#{loginName},
+			#{password},
+			#{isAllow}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_sso_subsystem_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			user_id,
+			subsystem_id,
+			login_name,
+			password,
+			is_allow
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{userId},
+			#{ssoSubsystem.id},
+			#{loginName},
+			#{password},
+			#{isAllow}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_sso_subsystem SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			user_id = #{userId},
+			subsystem_id = #{ssoSubsystem.id},
+			login_name = #{loginName},
+			password = #{password},
+			is_allow = #{isAllow}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_sso_subsystem
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_sso_subsystem SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserSsoSubsystem" statementType="STATEMENT">
+		select * FROM sys_user_sso_subsystem  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="getLoginNameAndPassword" resultType="UserSsoSubsystem" >
+		SELECT 
+			us.login_name AS "loginName", 
+			us.password  AS "password"
+		FROM 
+			sys_user_sso_subsystem us 
+		WHERE 
+			us.user_id = (
+				SELECT
+					su.id
+				FROM 
+					sys_user su
+				WHERE 
+					su.del_flag = '0'
+				AND 
+					su.no = #{no}
+			)
+		AND
+			us.subsystem_id = (
+				SELECT sso.id FROM sys_sso_subsystem sso WHERE sso.key = #{key}
+			)
+	</select>
+	
+	<select id="getSsoList" resultType="UserSsoSubsystem" >
+		SELECT
+			sso.key AS "ssoSubsystem.key",
+			sso.name AS "ssoSubsystem.name",
+			sso.url AS "ssoSubsystem.url",
+			userSso.login_name AS "loginName",
+			userSso.is_allow AS "isAllow"
+		FROM
+			sys_sso_subsystem sso
+		LEFT JOIN sys_user_sso_subsystem userSso 
+		ON userSso.subsystem_id = sso.id
+		LEFT JOIN sys_user su on su.id = userSso.user_id
+		WHERE
+			sso.is_inuse = '1'
+		AND su.del_flag = '0' AND su.no = #{no}
+	</select>
+	
+</mapper>

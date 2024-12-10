@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysusercontractrenew.dao.SysUserContractRenewDao">
+    
+	<sql id="sysUserContractRenewColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.name_id AS "name.id",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.contract_type AS "contractType",
+		a.contract_limit AS "contractLimit",
+		a.area_id AS "area.id",
+		a.remarks AS "remarks",
+		a.isdo AS "isDo",
+		name.name AS "name.name",
+		area.name AS "area.name"
+	</sql>
+	
+	<sql id="sysUserContractRenewJoins">
+		LEFT JOIN sys_user_info name ON name.id = a.name_id
+		LEFT JOIN sys_area area ON area.id = a.area_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserContractRenew" >
+		SELECT 
+			<include refid="sysUserContractRenewColumns"/>
+		FROM sys_user_contract_renew a
+		<include refid="sysUserContractRenewJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserContractRenew" >
+		SELECT 
+			<include refid="sysUserContractRenewColumns"/>
+		FROM sys_user_contract_renew a
+		<include refid="sysUserContractRenewJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserContractRenew" >
+		SELECT 
+			<include refid="sysUserContractRenewColumns"/>
+		FROM sys_user_contract_renew a
+		<include refid="sysUserContractRenewJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_contract_renew(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			begin_date,
+			end_date,
+			contract_type,
+			contract_limit,
+			area_id,
+			remarks,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{beginDate},
+			#{endDate},
+			#{contractType},
+			#{contractLimit},
+			#{area.id},
+			#{remarks},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_contract_renew_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			begin_date,
+			end_date,
+			contract_type,
+			contract_limit,
+			area_id,
+			remarks,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{beginDate},
+			#{endDate},
+			#{contractType},
+			#{contractLimit},
+			#{area.id},
+			#{remarks},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_contract_renew SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			name_id = #{name.id},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			contract_type = #{contractType},
+			contract_limit = #{contractLimit},
+			area_id = #{area.id},
+			remarks = #{remarks},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_contract_renew
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_contract_renew SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserContractRenew" statementType="STATEMENT">
+		select * FROM sys_user_contract_renew  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserContractRenew" >
+		SELECT 
+			<include refid="sysUserContractRenewColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_contract_renew a
+		<include refid="sysUserContractRenewJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserContractRenew.DEL_FLAG_NORMAL}
+			${sysUserContractRenew.sqlMap.dsf}
+			<!--
+			<if test="sysUserContractRenew.ownerCode != null and sysUserContractRenew.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserContractRenew.dbName == 'oracle'">#{sysUserContractRenew.ownerCode}||'%'</if>
+				<if test="sysUserContractRenew.dbName == 'mssql'">#{sysUserContractRenew.ownerCode}+'%'</if>
+				<if test="sysUserContractRenew.dbName == 'mysql'">concat(#{sysUserContractRenew.ownerCode},'%')</if>
+				<if test="sysUserContractRenew.dbName == 'dm'">concat(#{sysUserContractRenew.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserContractRenew.page !=null and sysUserContractRenew.page.orderBy != null and sysUserContractRenew.page.orderBy != ''">
+				ORDER BY ${sysUserContractRenew.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserContractRenew" >
+		SELECT 
+			<include refid="sysUserContractRenewColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_contract_renew a
+		<include refid="sysUserContractRenewJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserContractRenew.DEL_FLAG_NORMAL}
+			${sysUserContractRenew.sqlMap.dsf}
+			<!--
+			<if test="sysUserContractRenew.ownerCode != null and sysUserContractRenew.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserContractRenew.dbName == 'oracle'">#{sysUserContractRenew.ownerCode}||'%'</if>
+				<if test="sysUserContractRenew.dbName == 'mssql'">#{sysUserContractRenew.ownerCode}+'%'</if>
+				<if test="sysUserContractRenew.dbName == 'mysql'">concat(#{sysUserContractRenew.ownerCode},'%')</if>
+				<if test="sysUserContractRenew.dbName == 'dm'">concat(#{sysUserContractRenew.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserContractRenew.page !=null and sysUserContractRenew.page.orderBy != null and sysUserContractRenew.page.orderBy != ''">
+				ORDER BY ${sysUserContractRenew.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

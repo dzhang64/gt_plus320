@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="../css/common.css" type="text/css" data-for="result">
+	<script src="../jquery/jquery-3.1.0.min.js"></script>	
+	<script language="javascript">
+	
+	var notice_list=[
+			{"name":"控件工作原理","url":"../common/gzyl.html"},
+			{"name":"控件集成步骤","url":"../common/step.html"}
+	];
+	
+	var client_list=[
+		{"name":"在线打开保存文档","url":"../samples/OpenAndSave/OpenAndSave_Index_1.jsp"}, 
+		{"name":"模板套红","url":"../samples/TaoHong/TaoHong_Index_1.jsp"}, 
+		{"name":"模板书签填充","url":"../samples/TemplateBMFilling/TemplateBMFilling_Index.jsp"}, 
+		{"name":"自定义菜单栏","url":"../samples/CustomMenu/CustomMenu_Index.jsp"}, 
+		{"name":"自定义工具栏（全文批注）","url":"../samples/CustomToolBar/CustomToolBar_Index.jsp"}, 
+		{"name":"Office工具栏展示","url":"../samples/OfficeToolBar/OfficeToolBar_Index.jsp"},
+		{"name":"自定义皮肤","url":"../samples/CustomSkin/CustomSkin_Index.jsp"} 
+	];
+	
+	var server_list=[
+		{"name":"无组件文档阅读","url":"../samples/NoneComReading/NoneComReading_Index.jsp"}, 
+		{"name":"文档在线安全浏览","url":"../samples/DocuOnlineSaveReading/DocuOnlineSaveReading_Index.jsp"}, 
+		{"name":"在线文档对比","url":"../samples/CompareDocument/CompareDocument_Index.jsp"}, 
+		{"name":"Word文档添加水印","url":"../samples/AddWaterMark/AddWaterMark_Index.jsp"},  
+		{"name":"金格多浏览器编辑方案","url":"../samples/NewCrossBrowser/NewCrossBrowser_Index.jsp"}		
+	];
+	
+	var iWebOffice200X_list=[
+		{"name":"打开保存功能文档","url":"../samples/200X_OpenAndSave/200X_OpenAndSave_Index.jsp"}, 
+		{"name":"模版套红","url":"../samples/200X_TaoHong/200X_TaoHong_Index.jsp"}, 
+		{"name":"插入远程图片","url":"../samples/200X_WebInsertImage/200X_WebInsertImage_Index.jsp"},
+		{"name":"打印控制","url":"../samples/200X_PrintControl/200X_PrintControl_Index.jsp"},
+		{"name":"存为html图片","url":"../samples/200X_WebSaveAsPage/200X_WebSaveAsPage_Index.jsp"},
+		{"name":"存为pdf","url":"../samples/200X_WebSaveAsPdf/200X_WebSaveAsPdf_Index.jsp"},
+		{"name":"文档保护","url":"../samples/200X_DocumentProtect/200X_DocumentProtect_Index.jsp"}
+	];
+	
+	var type_list=[ 
+		{"name":"集成指南","list":notice_list}, 
+    {"name":"基础功能","list":client_list}, 
+		{"name":"高级功能","list":server_list},
+		{"name":"兼容iWebOffice200X功能展示","list":iWebOffice200X_list}
+  ];	
+	
+	var menu_i = -1;
+	var menu_j = -1;
+	
+	function on_menu_click(i,j)
+	{
+		if(menu_i != -1 && menu_j != -1)
+		{
+			var menuitem = document.getElementById("nav_li_" + menu_i + "_" + menu_j);
+			if(menuitem != null)
+			{
+				menuitem.className = "nav_li";
+			}
+		}
+	
+		var menuitem = document.getElementById("nav_li_" + i + "_" + j);
+		if(menuitem != null)
+		{
+			menuitem.className = "nav_li_selected";
+		}
+		
+		menu_i = i;
+		menu_j = j;
+		
+		// 加载页面
+		var ifm = document.getElementById("demo_content");
+		if(ifm != null)
+		{
+			ifm.src = (type_list[i].list[j].url);			
+		}
+	}
+	
+	function on_load()
+	{
+		//parent.frame_autoheight(document.body.scrollHeight);		
+		parent.frame_header.on_menu_click(0);
+		
+		on_menu_click(0,0);
+	}
+	
+	function changeFrameHeight()
+	{
+		var ifm = document.getElementById("demo_content"); 
+		var subWeb = document.frames ? document.frames['demo_content'].document : ifm.contentDocument; 
+		if(ifm != null && subWeb != null) 
+		{						
+			ifm.height = ifm.contentDocument.body.clientHeight + 50;			
+			parent.changeFrameHeight();			
+		}
+	}
+	
+	</script>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;" onload="on_load()">
+<table width="100%">
+<tr>
+<td width="250px" valign="top">
+<script language="javascript">
+for(var i=0;i<type_list.length;i++)
+{	
+	var list = type_list[i].list;
+	if(list != null)
+	{	
+		document.write("<p class=\"nav_title\"><span class=\"nav_title_text\">"+type_list[i].name+"</span></p>");
+		
+		document.write("<ul>");
+		for(var j=0;j<list.length;j++)
+		{
+			document.write("<li id=\"nav_li_" + i + "_" + j + "\" class=\"nav_li\" onclick=\"javascript:on_menu_click("+i+","+j+")\" >" + list[j].name + "</li>");
+		}
+		document.write("</ul>");
+	}
+} 
+</script>
+</td>
+<td id="td_demo_content" valign="top">
+	<div id="doc_content"></div>
+<iframe id="demo_content" name="demo_content" frameborder="0" scrolling="no" width="100%" onload="changeFrameHeight()"></iframe>
+</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysuserinterentry.dao.SysInternUserInformationDao">
+    
+	<sql id="sysInternUserInformationColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.proc_ins_id AS "procInsId",
+		a.owner_code AS "ownerCode",
+		a.name AS "name",
+		a.idcard_num AS "idcardNum",
+		a.photo AS "photo",
+		a.gender AS "gender",
+		a.native_place AS "nativePlace",
+		a.name_code AS "nameCode",
+		a.tel AS "tel",
+		a.office_id AS "office.id",
+		a.area_id AS "area.id",
+		a.salary_card_num AS "salaryCardNum",
+		a.user_status AS "userStatus",
+		a.user_type AS "userType",
+		a.salary_id AS "salary.id",
+		a.salary_level AS "salaryLevel",
+		a.own_email AS "ownEmail",
+		a.emergency_user_name AS "emergencyUserName",
+		a.emergency_user_relation AS "emergencyUserRelation",
+		a.emergency_user_phone AS "emergencyUserPhone",
+		a.address AS "address",
+		a.entry_date AS "entryDate",
+		a.service_year AS "serviceYear",
+		a.grade_school AS "gradeSchool",
+		a.major AS "major",
+		a.ed AS "ed",
+		a.bachelor AS "bachelor",
+		a.foreignlanguage_level AS "foreignlanguageLevel",
+		a.contract_sart_date AS "contractSartDate",
+		a.contract_end_date AS "contractEndDate",
+		a.contract AS "contract",
+		a.contract_type AS "contractType",
+		a.contract_limit AS "contractLimit",
+		a.socailsecurity_city AS "socailsecurityCity.id",
+		a.intern_begin_date AS "internBeginDate",
+		a.intern_end_date AS "internEndDate",
+		a.idcard_file AS "idcardFile",
+		a.grade_certificate AS "gradeCertificate",
+		a.person_resume AS "personResume",
+		a.commail AS "comMail",
+		a.isdo AS "isDo",
+		a.login_name As "loginName",
+		office.name AS "office.name",
+		area.name AS "area.name",
+		salary.level AS "salary.level",
+		socailsecurityCity.name AS "socailsecurityCity.name"
+	</sql>
+	
+	<sql id="sysInternUserInformationJoins">
+		LEFT JOIN sys_office office ON office.id = a.office_id
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		LEFT JOIN salary_level salary ON salary.id = a.salary_id
+		LEFT JOIN sys_area socailsecurityCity ON socailsecurityCity.id = a.socailsecurity_city
+	</sql>
+	
+    
+	<select id="get" resultType="SysInternUserInformation" >
+		SELECT 
+			<include refid="sysInternUserInformationColumns"/>
+		FROM sys_user_intern_entry a
+		<include refid="sysInternUserInformationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysInternUserInformation" >
+		SELECT 
+			<include refid="sysInternUserInformationColumns"/>
+		FROM sys_user_intern_entry a
+		<include refid="sysInternUserInformationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysInternUserInformation" >
+		SELECT 
+			<include refid="sysInternUserInformationColumns"/>
+		FROM sys_user_intern_entry a
+		<include refid="sysInternUserInformationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_intern_entry(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			proc_task_name,
+			proc_task_permission,
+			proc_ins_id,
+			owner_code,
+			name,
+			name_code,
+			idcard_num,
+			photo,
+			gender,
+			native_place,
+			tel,
+			office_id,
+			area_id,
+			salary_card_num,
+			user_status,
+			user_type,
+			salary_id,
+			salary_level,
+			own_email,
+			emergency_user_name,
+			emergency_user_relation,
+			emergency_user_phone,
+			address,
+			entry_date,
+			service_year,
+			grade_school,
+			major,
+			ed,
+			bachelor,
+			foreignlanguage_level,
+			contract_sart_date,
+			contract_end_date,
+			contract,
+			contract_type,
+			contract_limit,
+			socailsecurity_city,
+			intern_begin_date,
+			intern_end_date,
+			idcard_file,
+			grade_certificate,
+			person_resume,
+			commail,
+			isdo,
+			login_name
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{procInsId},
+			#{ownerCode},
+			#{name},
+			#{nameCode},
+			#{idcardNum},
+			#{photo},
+			#{gender},
+			#{nativePlace},
+			#{tel},
+			#{office.id},
+			#{area.id},
+			#{salaryCardNum},
+			#{userStatus},
+			#{userType},
+			#{salary.id},
+			#{salaryLevel},
+			#{ownEmail},
+			#{emergencyUserName},
+			#{emergencyUserRelation},
+			#{emergencyUserPhone},
+			#{address},
+			#{entryDate},
+			#{serviceYear},
+			#{gradeSchool},
+			#{major},
+			#{ed},
+			#{bachelor},
+			#{foreignlanguageLevel},
+			#{contractSartDate},
+			#{contractEndDate},
+			#{contract},
+			#{contractType},
+			#{contractLimit},
+			#{socailsecurityCity.id},
+			#{internBeginDate},
+			#{internEndDate},
+			#{idcardFile},
+			#{gradeCertificate},
+			#{personResume},
+			#{comMail},
+			#{isDo},
+			#{loginName}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_intern_entry_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			proc_task_name,
+			proc_task_permission,
+			proc_ins_id,
+			owner_code,
+			name,
+			idcard_num,
+			photo,
+			gender,
+			native_place,
+			name_code,
+			tel,
+			office_id,
+			area_id,
+			salary_card_num,
+			user_status,
+			user_type,
+			salary_id,
+			salary_level,
+			own_email,
+			emergency_user_name,
+			emergency_user_relation,
+			emergency_user_phone,
+			address,
+			entry_date,
+			service_year,
+			grade_school,
+			major,
+			ed,
+			bachelor,
+			foreignlanguage_level,
+			contract_sart_date,
+			contract_end_date,
+			contract,
+			contract_type,
+			contract_limit,
+			socailsecurity_city,
+			intern_begin_date,
+			intern_end_date,
+			idcard_file,
+			grade_certificate,
+			person_resume,
+			commail,
+			isdo,
+			login_name
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{procInsId},
+			#{ownerCode},
+			#{name},
+			#{idcardNum},
+			#{photo},
+			#{gender},
+			#{nativePlace},
+			#{nameCode},
+			#{tel},
+			#{office.id},
+			#{area.id},
+			#{salaryCardNum},
+			#{userStatus},
+			#{userType},
+			#{salary.id},
+			#{salaryLevel},
+			#{ownEmail},
+			#{emergencyUserName},
+			#{emergencyUserRelation},
+			#{emergencyUserPhone},
+			#{address},
+			#{entryDate},
+			#{serviceYear},
+			#{gradeSchool},
+			#{major},
+			#{ed},
+			#{bachelor},
+			#{foreignlanguageLevel},
+			#{contractSartDate},
+			#{contractEndDate},
+			#{contract},
+			#{contractType},
+			#{contractLimit},
+			#{socailsecurityCity.id},
+			#{internBeginDate},
+			#{internEndDate},
+			#{idcardFile},
+			#{gradeCertificate},
+			#{personResume},
+			#{comMail},
+			#{isDo},
+			#{loginName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_intern_entry SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			proc_ins_id = #{procInsId},
+			owner_code = #{ownerCode},
+			name = #{name},
+			name_code = #{nameCode},
+			idcard_num = #{idcardNum},
+			photo = #{photo},
+			gender = #{gender},
+			native_place = #{nativePlace},
+			tel = #{tel},
+			office_id = #{office.id},
+			area_id = #{area.id},
+			salary_card_num = #{salaryCardNum},
+			user_status = #{userStatus},
+			user_type = #{userType},
+			salary_id = #{salary.id},
+			salary_level = #{salaryLevel},
+			own_email = #{ownEmail},
+			emergency_user_name = #{emergencyUserName},
+			emergency_user_relation = #{emergencyUserRelation},
+			emergency_user_phone = #{emergencyUserPhone},
+			address = #{address},
+			entry_date = #{entryDate},
+			service_year = #{serviceYear},
+			grade_school = #{gradeSchool},
+			major = #{major},
+			ed = #{ed},
+			bachelor = #{bachelor},
+			foreignlanguage_level = #{foreignlanguageLevel},
+			contract_sart_date = #{contractSartDate},
+			contract_end_date = #{contractEndDate},
+			contract = #{contract},
+			contract_type = #{contractType},
+			contract_limit = #{contractLimit},
+			socailsecurity_city = #{socailsecurityCity.id},
+			intern_begin_date = #{internBeginDate},
+			intern_end_date = #{internEndDate},
+			idcard_file = #{idcardFile},
+			grade_certificate = #{gradeCertificate},
+			person_resume = #{personResume},
+			commail = #{comMail},
+			isdo = #{isDo},
+			login_name =#{loginName}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_intern_entry
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_intern_entry SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysInternUserInformation" statementType="STATEMENT">
+		select * FROM sys_user_intern_entry  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysInternUserInformation" >
+		SELECT 
+			<include refid="sysInternUserInformationColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_intern_entry a
+		<include refid="sysInternUserInformationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysInternUserInformation.DEL_FLAG_NORMAL}
+			${sysInternUserInformation.sqlMap.dsf}
+			<!--
+			<if test="sysInternUserInformation.ownerCode != null and sysInternUserInformation.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysInternUserInformation.dbName == 'oracle'">#{sysInternUserInformation.ownerCode}||'%'</if>
+				<if test="sysInternUserInformation.dbName == 'mssql'">#{sysInternUserInformation.ownerCode}+'%'</if>
+				<if test="sysInternUserInformation.dbName == 'mysql'">concat(#{sysInternUserInformation.ownerCode},'%')</if>
+				<if test="sysInternUserInformation.dbName == 'dm'">concat(#{sysInternUserInformation.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysInternUserInformation.page !=null and sysInternUserInformation.page.orderBy != null and sysInternUserInformation.page.orderBy != ''">
+				ORDER BY ${sysInternUserInformation.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysInternUserInformation" >
+		SELECT 
+			<include refid="sysInternUserInformationColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_intern_entry a
+		<include refid="sysInternUserInformationJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysInternUserInformation.DEL_FLAG_NORMAL}
+			${sysInternUserInformation.sqlMap.dsf}
+			<!--
+			<if test="sysInternUserInformation.ownerCode != null and sysInternUserInformation.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysInternUserInformation.dbName == 'oracle'">#{sysInternUserInformation.ownerCode}||'%'</if>
+				<if test="sysInternUserInformation.dbName == 'mssql'">#{sysInternUserInformation.ownerCode}+'%'</if>
+				<if test="sysInternUserInformation.dbName == 'mysql'">concat(#{sysInternUserInformation.ownerCode},'%')</if>
+				<if test="sysInternUserInformation.dbName == 'dm'">concat(#{sysInternUserInformation.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysInternUserInformation.page !=null and sysInternUserInformation.page.orderBy != null and sysInternUserInformation.page.orderBy != ''">
+				ORDER BY ${sysInternUserInformation.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

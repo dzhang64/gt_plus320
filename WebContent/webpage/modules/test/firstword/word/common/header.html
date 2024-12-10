@@ -1,0 +1,74 @@
+﻿<!doctype html>
+<html lang="zh-cn">
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="../css/common.css" type="text/css" data-for="result">
+	<script src="../jquery/jquery-3.1.0.min.js"></script>
+	<script language="javascript">
+
+	var menu_list=[
+				{"name":"API文档","url":"api.html"},
+				{"name":"技术支持","url":"support.html"},
+        {"name":"","url":""}
+    ];
+	var menu_idx = -1;
+
+	function on_load_page(idx)
+	{
+		if (idx == 1) {
+			window.open("/iWebOffice2015.jsp/samples/API.jsp");
+		}
+		else if (idx == 2) {
+			window.open('http://oa.goldgrid.com:70/bbs/showforum-117.aspx');
+		}
+	}
+
+	function on_menu_click(idx)
+	{
+		if(menu_idx != -1)
+		{
+			var tab;
+			var menuitem = document.getElementById("menu" + (menu_idx));
+			if(menuitem != null)
+			{
+				menuitem.className = "menu_button";
+			}
+		}
+
+		var menuitem = document.getElementById("menu" + (idx));
+		if(menuitem != null)
+		{
+			menuitem.className = "menu_button_focus";
+		}
+
+		menu_idx = idx;
+	}
+	</script>
+</head>
+<body style="margin:0; padding:0;background-color: #ffffff;" onload="on_load()">
+
+	<table width="100%">
+	<tr>
+	<td width="194px">
+	<div style="padding-left: 10px;">
+		<image src="../images/logo.jpg"  />
+	</div>
+	</td>
+	<td align="left">
+	<div style="padding-left: 0px;font-size: 20pt;color: #333333;font-family:微软雅黑;">
+		| iWebOffice2015
+	</div>
+	</td>
+	<td align="right">
+	<div style="padding-right: 50px;font-size:11pt;color:#333333;font-family:微软雅黑;">
+		<span><a id="menu2" class="menu_button" href="javascript:on_load_page(1)">API文档</a></span>
+		<span><a id="menu3" class="menu_button" href="javascript:on_load_page(2)">技术支持</a></span>
+	</div>
+	</td>
+	</tr>
+	</table>
+
+
+</body>
+</html>
+

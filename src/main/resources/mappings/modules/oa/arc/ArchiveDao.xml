@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.arc.ArchiveDao">
+    
+	<sql id="archiveColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.title AS "title",
+		a.create_date AS "createDate",
+		a.oa_arc_type_code AS "oaArcTypeCode",
+		a.read_count AS "readCount",
+		a.source_id AS "sourceId",
+		a.remarks AS "remarks",
+		a.files AS "files",
+		a.arc_id AS "arc.id",
+		arc.name AS "arc.name"
+	</sql>
+	
+	<sql id="archiveJoins">
+		LEFT JOIN OA_Arc_Category arc ON arc.id = a.arc_id
+	</sql>
+	
+    <resultMap type="Archive" id="ArchiveResult" autoMapping="true">
+    	<result column="files" property="files"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="ArchiveResult" >
+		SELECT 
+			<include refid="archiveColumns"/>
+		FROM oa_archive a
+		<include refid="archiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ArchiveResult" >
+		SELECT 
+			<include refid="archiveColumns"/>
+		FROM oa_archive a
+		<include refid="archiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="arc != null and arc.id != null and arc.id != ''">
+				AND (arc.id = #{arc.id} OR arc.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{arc.id}||',%')</if>
+					<if test="dbName == 'mssql'">'%'+#{arc.id}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{arc.id}, ',%'))</if>
+					<if test="dbName == 'dm'">CONCAT('%,', #{arc.id}, ',%'))</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="ArchiveResult" >
+		SELECT 
+			<include refid="archiveColumns"/>
+		FROM oa_archive a
+		<include refid="archiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_archive(
+			id,
+			create_by,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			title,
+			create_date,
+			oa_arc_type_code,
+			read_count,
+			source_id,
+			remarks,
+			files,
+			arc_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{title},
+			#{createDate},
+			#{oaArcTypeCode},
+			#{readCount},
+			#{sourceId},
+			#{remarks},
+			#{files},
+			#{arc.id}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_archive_V(
+			id,
+			create_by,
+			update_by,
+			update_date,
+			del_flag,
+			owner_code,
+			title,
+			create_date,
+			oa_arc_type_code,
+			read_count,
+			source_id,
+			remarks,
+			files,
+			arc_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{ownerCode},
+			#{title},
+			#{createDate},
+			#{oaArcTypeCode},
+			#{readCount},
+			#{sourceId},
+			#{remarks},
+			#{files},
+			#{arc.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_archive SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			owner_code = #{ownerCode},
+			title = #{title},
+			oa_arc_type_code = #{oaArcTypeCode},
+			read_count = #{readCount},
+			source_id = #{sourceId},
+			remarks = #{remarks},
+			files = #{files},
+			arc_id = #{arc.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_archive
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_archive SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Archive" statementType="STATEMENT">
+		select * FROM oa_archive  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findListByarc" resultType="ArcCategory">
+		SELECT 
+			*
+		FROM OA_Arc_Category a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+				<if test="dbName == 'oracle'">#{name}||'%'</if>
+				<if test="dbName == 'mssql'">#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{name},'%')</if>
+				<if test="dbName == 'dm'">concat(#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

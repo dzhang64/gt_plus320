@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>controller</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/web/${subModuleName}</filePath>
+	<fileName>${ClassName}Controller.java</fileName>
+	<content><![CDATA[
+/**
+ * Copyright &copy; 2015-2020 <a href="http://www.gt_plus.org/">Gt_Plus</a> All rights reserved.
+ */
+package ${packageName}.${moduleName}.web<#if subModuleName != "">.${subModuleName}</#if>;
+
+<#list table.columnList as c>
+		<#-- 如果存在自定义java对象 -->
+		<#if c.tableName?? && c.tableName!="">
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+		<#break>
+		</#if>
+</#list>
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.gt_plus.modules.bas.service.basmessage.BasMessageService;
+
+<#list table.importGridJavaList as i>
+import ${i};
+</#list>
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.gt_plus.common.utils.DateUtils;
+import com.gt_plus.common.utils.MyBeanUtils;
+import com.gt_plus.common.config.Global;
+import com.gt_plus.common.json.AjaxJson;
+import com.gt_plus.common.persistence.Page;
+import com.gt_plus.common.utils.Encodes;
+import com.gt_plus.common.web.BaseController;
+import com.gt_plus.common.utils.StringUtils;
+import com.gt_plus.common.utils.excel.ExportExcel;
+import com.gt_plus.common.utils.excel.ImportExcel;
+import com.gt_plus.modules.sys.utils.DictUtils;
+import com.gt_plus.modules.sys.utils.UserUtils;
+import ${packageName}.${moduleName}.entity<#if subModuleName != "">.${subModuleName}</#if>.${ClassName};
+import ${packageName}.${moduleName}.service<#if subModuleName != "">.${subModuleName}</#if>.${ClassName}Service;
+<#if table.ownerCodeExists>
+import com.gt_plus.modules.sys.service.OfficeService;
+</#if>
+<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+import com.gt_plus.modules.sys.service.SystemService;
+import com.gt_plus.modules.oa.service.edoc.EdocTplService;
+import com.gt_plus.modules.oa.entity.edoc.EdocTpl;
+import com.gt_plus.modules.sys.utils.FileUtils;
+</#if>
+/**
+ * ${functionName}Controller
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@Controller
+@RequestMapping(value = "${r"${adminPath}"}/${urlPrefix}")
+public class ${ClassName}Controller extends BaseController {
+
+	@Autowired
+	private ${ClassName}Service ${className}Service;
+	
+	@Autowired
+	private EdocTplService edocTplService;
+	
+	<#if table.ownerCodeExists>
+	@Autowired
+	private OfficeService officeService;
+	</#if>
+	
+	@Autowired
+	private BasMessageService basMessageService;
+	
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	@Autowired
+	private SystemService systemService;
+	</#if>
+	
+	//是否版本化数据
+	private static boolean isAutoVersion = <#if table.isVersion?? && table.isVersion == "1">true<#else>false</#if>; 
+	
+	@ModelAttribute
+	public ${ClassName} get(@RequestParam(required=false) String id) {
+		${ClassName} entity = null;
+		if (StringUtils.isNotBlank(id)){
+			entity = ${className}Service.get(id);
+		}
+		if (entity == null){
+			entity = new ${ClassName}();
+		}
+		return entity;
+	}
+	
+	/**
+	 * ${functionNameSimple}列表页面
+	 */
+	@RequiresPermissions("${permissionPrefix}:list")
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	@RequestMapping(value = "list/{path}")
+	public String list(@PathVariable("path")String path, ${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+	<#else>
+	@RequestMapping(value = {"list", ""})
+	public String list(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+	</#if>
+		<#if table.ownerCodeExists>
+		if(!UserUtils.getUser().isAdmin()) model.addAttribute("ownerCode", officeService.get(UserUtils.getUser().getCompany()).getCode());
+		</#if>
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		model.addAttribute("path", path);
+		if(path.equalsIgnoreCase(${ClassName}Service.PATH_QUERY)) {
+			return "${lastPackageName}/${viewPrefix}ListQuery";
+		} else {
+			return "${lastPackageName}/${viewPrefix}List";
+		}
+		<#else>
+		return "${lastPackageName}/${viewPrefix}List";
+		</#if>
+	}
+	
+	/**
+	 * ${functionNameSimple}列表数据
+	 */
+	@ResponseBody
+	@RequiresPermissions("${permissionPrefix}:list")
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	@RequestMapping(value = "data/{path}")
+	public Map<String, Object> data(@PathVariable("path")String path, ${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+		Page<${ClassName}> page = new Page<${ClassName}>();
+		if(path.equalsIgnoreCase(${ClassName}Service.PATH_QUERY)) {
+			${className}.getSqlMap().put("dsf", this.getDataScopeForAct());
+			page = ${className}Service.findPage(new Page<${ClassName}>(request, response), ${className}); 
+		} else {
+			${className}.getSqlMap().put("dsf", this.getDataScope());
+			page = ${className}Service.findPage(new Page<${ClassName}>(request, response), ${className}, path); 
+			page.setCount(page.getList().size());
+		}
+		return getBootstrapData(page);
+	}
+	<#else>
+	@RequestMapping(value = "data")
+	public Map<String, Object> data(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+		${className}.getSqlMap().put("dsf", this.getDataScope());
+		Page<${ClassName}> page = ${className}Service.findPage(new Page<${ClassName}>(request, response), ${className}); 
+		return getBootstrapData(page);
+	}
+	</#if>
+	
+	/**
+	 * 查看，增加，编辑${functionNameSimple}表单页面
+	 */
+	@RequiresPermissions(value={"${permissionPrefix}:view","${permissionPrefix}:add","${permissionPrefix}:edit"},logical=Logical.OR)
+	@RequestMapping(value = "form")
+	public String form(${ClassName} ${className}, Model model,HttpServletRequest request) {
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		String realPath = FileUtils.getRealPath(request);
+		String relativePath = null;
+		if (${className}.getIsNewRecord()) {
+			<#list table.columnList as c>
+				<#if c.isForm?? && c.isForm == "1" && c.isNotBaseField>
+					<#if c.showType == "weboffice">
+			relativePath = FileUtils.getRelativePath(request, FileUtils.getUuidToString());
+			new File(realPath + relativePath).mkdirs();
+			${className}.set${c.simpleJavaField?cap_first}(Encodes.urlEncode(relativePath));
+					</#if>
+				</#if>
+			</#list>
+		}
+		model.addAttribute("realPath", Encodes.urlEncode(realPath));
+		
+		//2017-12-17新增模版相关
+		EdocTpl edocTpl = new EdocTpl();
+		edocTpl.setType("send");
+		List<EdocTpl> list = edocTplService.findList(edocTpl);
+		List<Map<String, String>> tplList = Lists.newArrayList();
+		for (EdocTpl tpl : list) {
+			String files = Encodes.unescapeHtml(tpl.getFiles());
+			@SuppressWarnings("unchecked")
+			List<Map<String, String>> fromJson = new Gson().fromJson(files, List.class);
+			for (Map<String, String> map : fromJson) {
+				tplList.add(map);
+			}
+		}
+		model.addAttribute("tplList", tplList);
+		
+		${className}Service.setAct(${className});
+		${className}Service.setRuleArgs(${className});
+		</#if>
+		model.addAttribute("${className}", ${className});
+		<#list table.columnList as c>
+			<#if c.isForm?? && c.isForm == "1" && c.isNotBaseField && c.showType == "weboffice">
+		model.addAttribute("token", SystemService.entryptDesPassword(UserUtils.getPrincipal().getNo()));
+			<#break/>			
+			</#if>
+		</#list>
+		return "${lastPackageName}/${viewPrefix}Form";
+	}
+	
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	/**
+	 * 编辑正文
+	 */
+	@RequiresPermissions(value={"${permissionPrefix}:view","${permissionPrefix}:add","${permissionPrefix}:edit"},logical=Logical.OR)
+	@RequestMapping(value = "content")
+	public String content(${ClassName} ${className}, Model model, String uploadPath, String token, HttpServletRequest request, HttpServletResponse response) {
+		//2017-12-17新增模版相关//2017-12-19第二版
+		String realPath = FileUtils.getRealPath(request);
+		String tplUrl = ${className}.getRemarks().substring(
+				${className}.getRemarks().indexOf(Global.getConfig("fileUploadFolder"))+ Global.getConfig("fileUploadFolder").length(),
+				${className}.getRemarks().length());
+		String filename = tplUrl.substring(tplUrl.lastIndexOf("/") + 1, tplUrl.length());
+		String filetype = filename.substring(filename.indexOf("."), filename.length());
+		String uploadFilename = "/DOCUMENT";
+		try {
+			if (!new File(uploadPath + uploadFilename + filetype).exists()) {
+				IOUtils.copy(new FileInputStream(new File(realPath + tplUrl)),
+						new FileOutputStream(new File(uploadPath + uploadFilename
+								+ filetype)));
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("filename", uploadFilename.substring(1, uploadFilename.length()));
+		model.addAttribute("filetype", filetype);
+		
+		model.addAttribute("uploadPath", Encodes.urlEncode(uploadPath));
+		//model.addAttribute("userName", UserUtils.getUser().getName());
+		model.addAttribute("userName", systemService.getUserByNo(SystemService.decryptDesPassword(token)).getName());
+		model.addAttribute("id", ${className}.getId());
+		model.addAttribute("path", "${urlPrefix}");
+		if (StringUtils.isEmpty(${className}.getProcInsId())) {
+			model.addAttribute("editType", "1");
+		} else {
+			if (${className}.getRuleArgs() != null && ${className}.getRuleArgs().get("content") != null
+					&& ${className}.getRuleArgs().get("content").get("editType") != null) {
+				model.addAttribute("editType", ${className}.getRuleArgs().get("content").get("editType"));
+			} else {
+				model.addAttribute("editType", "1");
+			}
+		}
+		
+		model.addAttribute("${className}", ${className});
+		return "modules/sys/webOfficeContent";
+	}
+	</#if>
+
+	/**
+	 * 保存${functionNameSimple}
+	 */
+	@ResponseBody
+	@RequiresPermissions(value={"${permissionPrefix}:add","${permissionPrefix}:edit"},logical=Logical.OR)
+	@RequestMapping(value = "save")
+	public AjaxJson save(${ClassName} ${className}, Model model, RedirectAttributes redirectAttributes, String dirtyUpdateDate) throws Exception{
+		<#list table.columnList as c>
+			<#if c.magicLogic?? && (c.magicLogic == "audit")>
+		${className}.set${c.simpleJavaField?cap_first}(this.buildAudits(${className}.getPreAudits(), ${className}.get${c.simpleJavaField?cap_first}(), ${className}.getPreStatus(), ${className}.getStatus(), UserUtils.getUser().getRoleEnNames()));
+			<#break/>
+			</#if>
+		</#list>
+		AjaxJson j = new AjaxJson();
+		
+		if (!beanValidator(model, ${className})){
+			j.setSuccess(false);
+			j.setMsg(DictUtils.getDictLabel("非法参数", "msg_bas", "非法参数！"));
+			return j;
+		}
+		
+		if(!${className}.getIsNewRecord()){
+			//修改保存
+			${ClassName} t = ${className}Service.get(${className}.getId());
+			if(!t.getUpdateDate().toString().equals(dirtyUpdateDate)) 
+			{
+				//保存前记录被其他人修改
+				j.setSuccess(false);
+				j.setMsg(DictUtils.getDictLabel("记录已经被修改", "msg_bas", "记录已经被修改"));
+				return j;
+			} else {
+				//保存历史版本
+				if(isAutoVersion) ${className}Service.saveV(t);   
+				//将编辑表单中的非NULL值覆盖数据库记录中的值 
+				MyBeanUtils.copyBeanNotNull2Bean(${className}, t);
+				<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+				${className}Service.saveAct(t);
+				<#else>
+				${className}Service.save(t);
+				</#if>
+			}
+		}else{
+			//新建保存
+			<#if table.ownerCodeExists>
+			${className}.setOwnerCode(officeService.get(UserUtils.getUser().getCompany().getId()).getCode());
+			</#if>
+			<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+			${className}Service.saveAct(${className});
+			<#else>
+			${className}Service.save(${className});
+			</#if>
+		}
+		j.setSuccess(true);
+		j.setMsg(DictUtils.getDictLabel("保存?信息成功", "msg_bas", "保存${functionNameSimple}信息成功","${functionNameSimple}"));
+		//保存成功后处理逻辑
+		this.afterSave("${functionNameSimple}", ${className});
+		return j;
+	}
+	
+	/**
+	 * 删除${functionNameSimple}
+	 */
+	@ResponseBody
+	@RequiresPermissions("${permissionPrefix}:del")
+	@RequestMapping(value = "delete")
+	public AjaxJson delete(${ClassName} ${className}, RedirectAttributes redirectAttributes) {
+		AjaxJson j = new AjaxJson();
+		//保存历史版本
+		if(isAutoVersion) {
+			${className}.setDelFlag(Global.YES);
+			${className}Service.saveV(${className}); 
+		}
+		${className}Service.delete(${className});
+		j.setMsg(DictUtils.getDictLabel("删除?信息成功", "msg_bas", "删除${functionNameSimple}信息成功","${functionNameSimple}"));
+		return j;
+	}
+	
+	/**
+	 * 批量删除${functionNameSimple}
+	 */
+	@ResponseBody
+	@RequiresPermissions("${permissionPrefix}:del")
+	@RequestMapping(value = "deleteAll")
+	public AjaxJson deleteAll(String ids, RedirectAttributes redirectAttributes) {
+		AjaxJson j = new AjaxJson();
+		String idArray[] =ids.split(",");
+		for(String id : idArray){
+			//保存历史版本
+			if(isAutoVersion) {
+				${ClassName} obj = ${className}Service.get(id);
+				obj.setDelFlag(Global.YES);
+				${className}Service.saveV(obj); 
+			}
+			${className}Service.delete(${className}Service.get(id));
+		}
+		j.setMsg(DictUtils.getDictLabel("删除?信息成功", "msg_bas", "删除${functionNameSimple}信息成功","${functionNameSimple}"));
+		return j;
+	}
+	
+	/**
+	 * 导出excel文件
+	 */
+	@ResponseBody
+	@RequiresPermissions("${permissionPrefix}:export")
+    @RequestMapping(value = "export", method=RequestMethod.POST)
+    public AjaxJson exportFile(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+		AjaxJson j = new AjaxJson();
+		try {
+            String fileName = "${functionNameSimple}"+DateUtils.getDate("yyyyMMddHHmmss")+".xlsx";
+            Page<${ClassName}> page = ${className}Service.findPage(new Page<${ClassName}>(request, response, -1), ${className});
+    		new ExportExcel("${functionNameSimple}", ${ClassName}.class).setDataList(page.getList()).write(response, fileName).dispose();
+    		j.setSuccess(true);
+    		j.setMsg(DictUtils.getDictLabel("导出成功", "msg_bas", "导出成功！"));
+    		return j;
+		} catch (Exception e) {
+			j.setSuccess(false);
+			j.setMsg(DictUtils.getDictLabel("导出?信息记录失败", "msg_bas", "导出${functionNameSimple}信息记录失败！", "${functionNameSimple}") + "失败信息：" + e.getMessage());
+		}
+		return j;
+    }
+
+	/**
+	 * 导入Excel数据
+
+	 */
+	@RequiresPermissions("${permissionPrefix}:import")
+    @RequestMapping(value = "import", method=RequestMethod.POST)
+    public String importFile(MultipartFile file, RedirectAttributes redirectAttributes) {
+		try {
+			int successNum = 0;
+			int failureNum = 0;
+			StringBuilder failureMsg = new StringBuilder();
+			ImportExcel ei = new ImportExcel(file, 1, 0);
+			List<${ClassName}> list = ei.getDataList(${ClassName}.class);
+			for (${ClassName} ${className} : list){
+				try{
+					${className}Service.save(${className});
+					successNum++;
+				}catch(ConstraintViolationException ex){
+					failureNum++;
+				}catch (Exception ex) {
+					failureNum++;
+				}
+			}
+			if (failureNum>0){
+				failureMsg.insert(0, "，失败 "+failureNum+" 条${functionNameSimple}记录。");
+			}
+			addMessage(redirectAttributes, "已成功导入 "+successNum+" 条${functionNameSimple}记录"+failureMsg);
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导入${functionNameSimple}失败！失败信息："+e.getMessage());
+		}
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+    }
+	
+	/**
+	 * 下载导入${functionNameSimple}数据模板
+	 */
+	@RequiresPermissions("${permissionPrefix}:import")
+    @RequestMapping(value = "import/template")
+    public String importFileTemplate(HttpServletResponse response, RedirectAttributes redirectAttributes) {
+		try {
+            String fileName = "${functionNameSimple}数据导入模板.xlsx";
+    		List<${ClassName}> list = Lists.newArrayList(); 
+    		new ExportExcel("${functionNameSimple}数据", ${ClassName}.class, 1).setDataList(list).write(response, fileName).dispose();
+    		return null;
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导入模板下载失败！失败信息："+e.getMessage());
+		}
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+    }
+	
+	
+	<#list table.columnList as c>
+		<#-- 如果存在自定义java对象 -->
+			<#if c.tableName?? && c.tableName!="">
+	/**
+	 * 选择${c.comments}
+	 */
+	@RequestMapping(value = "select${c.simpleJavaField}")
+	public String select${c.simpleJavaField}(${c.simpleJavaType} ${c.simpleJavaField}, String url, String fieldLabels, String fieldKeys, String searchLabel, String searchKey, HttpServletRequest request, HttpServletResponse response, Model model) {
+		Page<${c.simpleJavaType}> page = ${className}Service.findPageBy${c.simpleJavaField}(new Page<${c.simpleJavaType}>(request, response),  ${c.simpleJavaField});
+		try {
+			fieldLabels = URLDecoder.decode(fieldLabels, "UTF-8");
+			fieldKeys = URLDecoder.decode(fieldKeys, "UTF-8");
+			searchLabel = URLDecoder.decode(searchLabel, "UTF-8");
+			searchKey = URLDecoder.decode(searchKey, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("labelNames", fieldLabels.split("\\|"));
+		model.addAttribute("labelValues", fieldKeys.split("\\|"));
+		model.addAttribute("fieldLabels", fieldLabels);
+		model.addAttribute("fieldKeys", fieldKeys);
+		model.addAttribute("url", url);
+		model.addAttribute("searchLabel", searchLabel);
+		model.addAttribute("searchKey", searchKey);
+		model.addAttribute("obj", ${c.simpleJavaField});
+		model.addAttribute("page", page);
+		return "modules/sys/gridselect";
+	}
+			</#if>
+	</#list>
+	
+	/**
+	 * 创建数据范围
+	 */
+	private String getDataScope() {
+		StringBuilder sqlString = new StringBuilder();
+		<#if table.extJavaMap?? && table.extJavaMap["controller-getdatascope"]??>
+		${table.extJavaMap["controller-getdatascope"]}
+		</#if>
+		return sqlString.toString();
+	}
+	
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	private String getDataScopeForAct() {
+		StringBuilder sqlString = new StringBuilder();
+		return sqlString.toString();
+	}
+	</#if>
+	
+	/**
+	 * 保存成功后处理逻辑
+	 */
+	private void afterSave(String title, ${ClassName} ${className}) {
+		Map<String, String> roleMap = new HashMap<String, String>();
+		String subSystemCode = "wz";
+		//roleMap.put("role_enname", "/${urlPrefix}");
+		//subSystemCode = "子系统或者模块标识，例如wz_sec，表示安保";
+		<#if table.extJavaMap?? && table.extJavaMap["controller-aftersave"]??>
+		${table.extJavaMap["controller-aftersave"]}
+		</#if>
+		//if(roleMap.size() > 0) basMessageService.saveMessage(subSystemCode, title, ${className}.getOwnerCode(), roleMap);
+	}
+	
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	@ResponseBody
+	@RequiresPermissions("${permissionPrefix}:list")
+	@RequestMapping(value = "getUserList")
+	public AjaxJson getUserList(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+		AjaxJson j = new AjaxJson();
+		String[] ids = request.getParameterValues("userKey");
+		LinkedHashMap<String, Object> targetUserInfo = ${className}Service.getTargetUserList(${className},ids);
+		j.setBody(targetUserInfo);
+		j.setSuccess(true);
+		return j;
+	}
+	</#if>
+}]]>
+	</content>
+</template>

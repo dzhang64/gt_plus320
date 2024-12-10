@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.mgmt.dao.oaas.OfferAdviceDao">
+    
+	<sql id="offerAdviceColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.comp AS "comp",
+		a.name AS "name",
+		a.tel AS "tel",
+		a.address AS "address",
+		a.email AS "email",
+		a.pcode AS "pcode",
+		a.title AS "title",
+		a.content0 AS "content0",
+		a.content1 AS "content1",
+		a.content2 AS "content2"
+	</sql>
+	
+	<sql id="offerAdviceJoins">
+	</sql>
+	
+    <resultMap type="OfferAdvice" id="OfferAdviceResult" autoMapping="true">
+    	<result column="content0" property="content0"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    	<result column="content1" property="content1"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    	<result column="content2" property="content2"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="OfferAdviceResult" >
+		SELECT 
+			<include refid="offerAdviceColumns"/>
+		FROM offer_advice a
+		<include refid="offerAdviceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="OfferAdviceResult" >
+		SELECT 
+			<include refid="offerAdviceColumns"/>
+		FROM offer_advice a
+		<include refid="offerAdviceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<!-- <if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if> -->
+			<if test="comp != null and comp != ''">
+				AND a.comp LIKE 
+					<if test="dbName == 'oracle'">'%'||#{comp}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{comp}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{comp},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{comp},'%')</if>
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="OfferAdviceResult" >
+		SELECT 
+			<include refid="offerAdviceColumns"/>
+		FROM offer_advice a
+		<include refid="offerAdviceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO offer_advice(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			comp,
+			name,
+			tel,
+			address,
+			email,
+			pcode,
+			title,
+			content0,
+			content1,
+			content2
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{comp},
+			#{name},
+			#{tel},
+			#{address},
+			#{email},
+			#{pcode},
+			#{title},
+			#{content0},
+			#{content1},
+			#{content2}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO offer_advice_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			comp,
+			name,
+			tel,
+			address,
+			email,
+			pcode,
+			title,
+			content0,
+			content1,
+			content2
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{comp},
+			#{name},
+			#{tel},
+			#{address},
+			#{email},
+			#{pcode},
+			#{title},
+			#{content0},
+			#{content1},
+			#{content2}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE offer_advice SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			comp = #{comp},
+			name = #{name},
+			tel = #{tel},
+			address = #{address},
+			email = #{email},
+			pcode = #{pcode},
+			title = #{title},
+			content0 = #{content0},
+			content1 = #{content1},
+			content2 = #{content2}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM offer_advice
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE offer_advice SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OfferAdvice" statementType="STATEMENT">
+		select * FROM offer_advice  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	
+</mapper>

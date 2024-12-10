@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.edoc.EdocReceiveDao">
+    
+	<sql id="edocReceiveColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.dense AS "dense",
+		a.year AS "year",
+		a.secrecy_limit AS "secrecyLimit",
+		a.urgency AS "urgency",
+		a.leader_result AS "leaderResult",
+		a.office_result AS "officeResult",
+		a.part_result AS "partResult",
+		a.type AS "type",
+		a.inner_number AS "innerNumber",
+		a.receive_date AS "receiveDate",
+		a.receive_from AS "receiveFrom",
+		a.doc_number AS "docNumber",
+		a.time_limit AS "timeLimit",
+		a.title AS "title",
+		a.files AS "files",
+		a.content_url AS "contentUrl"
+	</sql>
+	
+	<sql id="edocReceiveJoins">
+	</sql>
+	
+    <resultMap type="EdocReceive" id="EdocReceiveResult" autoMapping="true">
+    	<result column="files" property="files"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="EdocReceiveResult" >
+		SELECT 
+			<include refid="edocReceiveColumns"/>
+		FROM oa_edoc_receive a
+		<include refid="edocReceiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="EdocReceiveResult" >
+		SELECT 
+			<include refid="edocReceiveColumns"/>
+		FROM oa_edoc_receive a
+		<include refid="edocReceiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="EdocReceiveResult" >
+		SELECT 
+			<include refid="edocReceiveColumns"/>
+		FROM oa_edoc_receive a
+		<include refid="edocReceiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_edoc_receive(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			dense,
+			year,
+			secrecy_limit,
+			urgency,
+			leader_result,
+			office_result,
+			part_result,
+			type,
+			inner_number,
+			receive_date,
+			receive_from,
+			doc_number,
+			time_limit,
+			title,
+			files,
+			content_url
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{dense},
+			#{year},
+			#{secrecyLimit},
+			#{urgency},
+			#{leaderResult},
+			#{officeResult},
+			#{partResult},
+			#{type},
+			#{innerNumber},
+			#{receiveDate},
+			#{receiveFrom},
+			#{docNumber},
+			#{timeLimit},
+			#{title},
+			#{files},
+			#{contentUrl}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_edoc_receive_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			dense,
+			year,
+			secrecy_limit,
+			urgency,
+			leader_result,
+			office_result,
+			part_result,
+			type,
+			inner_number,
+			receive_date,
+			receive_from,
+			doc_number,
+			time_limit,
+			title,
+			files,
+			content_url
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{dense},
+			#{year},
+			#{secrecyLimit},
+			#{urgency},
+			#{leaderResult},
+			#{officeResult},
+			#{partResult},
+			#{type},
+			#{innerNumber},
+			#{receiveDate},
+			#{receiveFrom},
+			#{docNumber},
+			#{timeLimit},
+			#{title},
+			#{files},
+			#{contentUrl}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_edoc_receive SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			dense = #{dense},
+			year = #{year},
+			secrecy_limit = #{secrecyLimit},
+			urgency = #{urgency},
+			leader_result = #{leaderResult},
+			office_result = #{officeResult},
+			part_result = #{partResult},
+			type = #{type},
+			inner_number = #{innerNumber},
+			receive_date = #{receiveDate},
+			receive_from = #{receiveFrom},
+			doc_number = #{docNumber},
+			time_limit = #{timeLimit},
+			title = #{title},
+			files = #{files},
+			content_url = #{contentUrl}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_edoc_receive
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_edoc_receive SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="EdocReceive" statementType="STATEMENT">
+		select * FROM oa_edoc_receive  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultMap="EdocReceiveResult" >
+		SELECT 
+			<include refid="edocReceiveColumns"/>
+			,u.name AS "createBy.name" 
+			,tp.operation AS "procTaskPermission.operation"
+		FROM oa_edoc_receive a
+		<include refid="edocReceiveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp  ON a.proc_task_permission = tp.id
+		<where>
+			a.del_flag = #{edocReceive.DEL_FLAG_NORMAL}
+			${edocReceive.sqlMap.dsf}
+			<!--
+			<if test="edocReceive.ownerCode != null and edocReceive.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="edocReceive.dbName == 'oracle'">#{edocReceive.ownerCode}||'%'</if>
+				<if test="edocReceive.dbName == 'mssql'">#{edocReceive.ownerCode}+'%'</if>
+				<if test="edocReceive.dbName == 'mysql'">concat(#{edocReceive.ownerCode},'%')</if>
+				<if test="edocReceive.dbName == 'dm'">concat(#{edocReceive.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+			<if test="edocReceive.title != null and edocReceive.title != ''">
+				AND a.title LIKE
+				<if test="edocReceive.dbName == 'oracle'">'%'||#{edocReceive.title}||'%'</if>
+				<if test="edocReceive.dbName == 'mssql'">'%'+#{edocReceive.title}+'%'</if>
+				<if test="edocReceive.dbName == 'mysql'">concat('%',#{edocReceive.title},'%')</if>
+				<if test="edocReceive.dbName == 'dm'">concat('%',#{edocReceive.title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="edocReceive.page !=null and edocReceive.page.orderBy != null and edocReceive.page.orderBy != ''">
+				ORDER BY ${edocReceive.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultMap="EdocReceiveResult" >
+		SELECT 
+			<include refid="edocReceiveColumns"/>
+			,u.name AS "createBy.name" 
+		FROM oa_edoc_receive a
+		<include refid="edocReceiveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{edocReceive.DEL_FLAG_NORMAL}
+			${edocReceive.sqlMap.dsf}
+			<!--
+			<if test="edocReceive.ownerCode != null and edocReceive.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="edocReceive.dbName == 'oracle'">#{edocReceive.ownerCode}||'%'</if>
+				<if test="edocReceive.dbName == 'mssql'">#{edocReceive.ownerCode}+'%'</if>
+				<if test="edocReceive.dbName == 'mysql'">concat(#{edocReceive.ownerCode},'%')</if>
+				<if test="edocReceive.dbName == 'dm'">concat(#{edocReceive.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="edocReceive.page !=null and edocReceive.page.orderBy != null and edocReceive.page.orderBy != ''">
+				ORDER BY ${edocReceive.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

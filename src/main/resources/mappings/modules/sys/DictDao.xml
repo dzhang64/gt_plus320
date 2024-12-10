@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sys.dao.DictDao">
+    
+	<sql id="dictColumns">
+		a.id AS "id",
+		a.value AS "value",
+		a.label AS "label",
+		a.types AS "types",
+		a.parent_id AS "parent.id",
+		a.description AS "description",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.view_flag AS "view",
+		a.edit_flag AS "edit",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="dictJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="Dict" >
+		SELECT 
+			<include refid="dictColumns"/>
+		FROM sys_dict a
+		<include refid="dictJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Dict" >
+		SELECT 
+			<include refid="dictColumns"/>
+		FROM sys_dict a
+		<include refid="dictJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="types != null and types != ''">
+				AND a.types = #{types}
+			</if>
+			<if test="description != null and description != ''">
+			AND a.description like 
+					<if test="dbName == 'oracle'">'%'||#{description}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{description}, '%')</if>
+					<if test="dbName == 'dm'">CONCAT('%', #{description}, '%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.types, a.sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Dict" >
+		SELECT 
+			<include refid="dictColumns"/>
+		FROM sys_dict a
+		<include refid="dictJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.types, a.sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findTypeList" resultType="string">
+		SELECT 
+			types AS "type" 
+		FROM sys_dict 
+		WHERE del_flag = #{DEL_FLAG_NORMAL} 
+		GROUP BY types
+		ORDER BY types
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_dict(
+			id,
+			value,
+			label,
+			types,
+			parent_id,
+			description,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			view_flag,
+			edit_flag,
+			sort
+		) VALUES (
+			#{id},
+			#{value},
+			#{label},
+			#{types},
+			#{parent.id},
+			#{description},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{view},
+			#{edit},
+			#{sort}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_dict_V(
+			id,
+			value,
+			label,
+			types,
+			parent_id,
+			description,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			view_flag,
+			edit_flag,
+			sort
+		) VALUES (
+			#{id},
+			#{value},
+			#{label},
+			#{types},
+			#{parent.id},
+			#{description},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{view},
+			#{edit},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_dict SET 	
+			value = #{value},
+			label = #{label},
+			types = #{types},
+			parent_id = #{parent.id},
+			description = #{description},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			view_flag = #{view},
+			edit_flag = #{edit},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_dict
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_dict SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Dict" statementType="STATEMENT">
+		select * FROM sys_dict  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

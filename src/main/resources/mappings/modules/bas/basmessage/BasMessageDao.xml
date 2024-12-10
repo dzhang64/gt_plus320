@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.bas.dao.basmessage.BasMessageDao">
+    
+	<sql id="basMessageColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.types AS "types",
+		a.content AS "content",
+		a.status AS "status",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="basMessageJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="BasMessage" >
+		SELECT 
+			<include refid="basMessageColumns"/>
+		FROM bas_message a
+		<include refid="basMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BasMessage" >
+		SELECT 
+			<include refid="basMessageColumns"/>
+		FROM bas_message a
+		<include refid="basMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="id == null or id == ''">
+				<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+					AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+				</if>
+				<if test="types != null and types != ''">
+					AND a.types = #{types}
+				</if>
+				<if test="status != null and status != ''">
+					AND a.status = #{status}
+				</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="BasMessage" >
+		SELECT 
+			<include refid="basMessageColumns"/>
+		FROM bas_message a
+		<include refid="basMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO bas_message(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			types,
+			content,
+			status,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{types},
+			#{content},
+			#{status},
+			#{remarks}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO bas_message_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			types,
+			content,
+			status,
+			remarks
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{types},
+			#{content},
+			#{status},
+			#{remarks}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE bas_message SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			types = #{types},
+			content = #{content},
+			status = #{status},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM bas_message
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE bas_message SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="BasMessage" statementType="STATEMENT">
+		select * FROM bas_message  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

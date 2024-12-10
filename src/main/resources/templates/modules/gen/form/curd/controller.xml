@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>controller</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/web/${subModuleName}</filePath>
+	<fileName>${ClassName}Controller.java</fileName>
+	<content><![CDATA[
+/**
+ * Copyright &copy; 2015-2020 <a href="http://www.gt_plus.org/">Gt_Plus</a> All rights reserved.
+ */
+package ${packageName}.${moduleName}.web<#if subModuleName != "">.${subModuleName}</#if>;
+
+<#list table.columnList as c>
+		<#-- 如果存在自定义java对象 -->
+		<#if c.tableName?? && c.tableName!="">
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+		<#break>
+		</#if>
+</#list>
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+<#list table.importGridJavaList as i>
+import ${i};
+</#list>
+import com.google.common.collect.Lists;
+import com.gt_plus.common.utils.DateUtils;
+import com.gt_plus.common.utils.MyBeanUtils;
+import com.gt_plus.common.config.Global;
+import com.gt_plus.common.persistence.Page;
+import com.gt_plus.common.web.BaseController;
+import com.gt_plus.common.utils.StringUtils;
+import com.gt_plus.common.utils.excel.ExportExcel;
+import com.gt_plus.common.utils.excel.ImportExcel;
+import com.gt_plus.modules.sys.utils.UserUtils;
+import ${packageName}.${moduleName}.entity<#if subModuleName != "">.${subModuleName}</#if>.${ClassName};
+import ${packageName}.${moduleName}.service<#if subModuleName != "">.${subModuleName}</#if>.${ClassName}Service;
+
+/**
+ * ${functionName}Controller
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@Controller
+@RequestMapping(value = "${r"${adminPath}"}/${urlPrefix}")
+public class ${ClassName}Controller extends BaseController {
+
+	@Autowired
+	private ${ClassName}Service ${className}Service;
+	
+	private void setDbType() {
+		//DataSourceContextHolder.setDbType("dataSourceApp");
+	}
+	
+	private static boolean isAutoVersion = false; //是否版本化数据
+	
+	@ModelAttribute
+	public ${ClassName} get(@RequestParam(required=false) String id) {
+		this.setDbType();
+		${ClassName} entity = null;
+		if (StringUtils.isNotBlank(id)){
+			entity = ${className}Service.get(id);
+		}
+		if (entity == null){
+			entity = new ${ClassName}();
+		}
+		return entity;
+	}
+	
+	/**
+	 * ${functionNameSimple}列表页面
+	 */
+	@RequiresPermissions("${permissionPrefix}:list")
+	@RequestMapping(value = {"list", ""})
+	public String list(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, Model model) {
+		this.setDbType();
+		Page<${ClassName}> page = ${className}Service.findPage(new Page<${ClassName}>(request, response), ${className}); 
+		model.addAttribute("page", page);
+		
+		//规则变量
+		HashMap<String,String> ruleMap = new HashMap<String,String>();
+		//用户角色英文名称，中间用,分隔
+		ruleMap.put("roles", UserUtils.getUser().getRoleEnNames());
+		ruleMap.put("userId", UserUtils.getUser().getId());
+		model.addAttribute("ruleMap", ruleMap);
+		
+		return "${lastPackageName}/${viewPrefix}List";
+	}
+
+	/**
+	 * 查看，增加，编辑${functionNameSimple}表单页面
+	 */
+	@RequiresPermissions(value={"${permissionPrefix}:view","${permissionPrefix}:add","${permissionPrefix}:edit"},logical=Logical.OR)
+	@RequestMapping(value = "form")
+	public String form(${ClassName} ${className}, Model model) {
+		this.setDbType();
+		model.addAttribute("${className}", ${className});
+		return "${lastPackageName}/${viewPrefix}Form";
+	}
+
+	/**
+	 * 保存${functionNameSimple}
+	 */
+	@RequiresPermissions(value={"${permissionPrefix}:add","${permissionPrefix}:edit"},logical=Logical.OR)
+	@RequestMapping(value = "save")
+	public String save(${ClassName} ${className}, Model model, RedirectAttributes redirectAttributes, String dirtyUpdateDate) throws Exception{
+		this.setDbType();
+		if (!beanValidator(model, ${className})){
+			return form(${className}, model);
+		}
+		if(!${className}.getIsNewRecord()){//编辑表单保存
+			${ClassName} t = ${className}Service.get(${className}.getId());//从数据库取出记录的值
+			if(!t.getUpdateDate().toString().equals(dirtyUpdateDate)) throw new Exception("该记录已经被修改，请返回上一页重新编辑。");
+			if(isAutoVersion) ${className}Service.saveV(t); //保存历史版本
+			MyBeanUtils.copyBeanNotNull2Bean(${className}, t);//将编辑表单中的非NULL值覆盖数据库记录中的值
+			${className}Service.save(t);//保存
+		}else{//新增表单保存
+			${className}Service.save(${className});//保存
+		}
+		addMessage(redirectAttributes, "保存${functionNameSimple}成功");
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+	}
+	
+	/**
+	 * 删除${functionNameSimple}
+	 */
+	@RequiresPermissions("${permissionPrefix}:del")
+	@RequestMapping(value = "delete")
+	public String delete(${ClassName} ${className}, RedirectAttributes redirectAttributes) {
+		this.setDbType();
+		if(isAutoVersion) {
+			${className}.setDelFlag(Global.YES);
+			${className}Service.saveV(${className}); //保存历史版本
+		}
+		${className}Service.delete(${className});
+		addMessage(redirectAttributes, "删除${functionNameSimple}成功");
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+	}
+	
+	/**
+	 * 批量删除${functionNameSimple}
+	 */
+	@RequiresPermissions("${permissionPrefix}:del")
+	@RequestMapping(value = "deleteAll")
+	public String deleteAll(String ids, RedirectAttributes redirectAttributes) {
+		this.setDbType();
+		String idArray[] =ids.split(",");
+		for(String id : idArray){
+			if(isAutoVersion) {
+				${ClassName} obj = ${className}Service.get(id);
+				obj.setDelFlag(Global.YES);
+				${className}Service.saveV(obj); //保存历史版本
+			}
+			${className}Service.delete(${className}Service.get(id));
+		}
+		addMessage(redirectAttributes, "删除${functionNameSimple}成功");
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+	}
+	
+	/**
+	 * 导出excel文件
+	 */
+	@RequiresPermissions("${permissionPrefix}:export")
+    @RequestMapping(value = "export", method=RequestMethod.POST)
+    public String exportFile(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+		this.setDbType();
+		try {
+            String fileName = "${functionNameSimple}"+DateUtils.getDate("yyyyMMddHHmmss")+".xlsx";
+            Page<${ClassName}> page = ${className}Service.findPage(new Page<${ClassName}>(request, response, -1), ${className});
+    		new ExportExcel("${functionNameSimple}", ${ClassName}.class).setDataList(page.getList()).write(response, fileName).dispose();
+    		return null;
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导出${functionNameSimple}记录失败！失败信息："+e.getMessage());
+		}
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+    }
+
+	/**
+	 * 导入Excel数据
+
+	 */
+	@RequiresPermissions("${permissionPrefix}:import")
+    @RequestMapping(value = "import", method=RequestMethod.POST)
+    public String importFile(MultipartFile file, RedirectAttributes redirectAttributes) {
+		this.setDbType();
+		try {
+			int successNum = 0;
+			int failureNum = 0;
+			StringBuilder failureMsg = new StringBuilder();
+			ImportExcel ei = new ImportExcel(file, 1, 0);
+			List<${ClassName}> list = ei.getDataList(${ClassName}.class);
+			for (${ClassName} ${className} : list){
+				try{
+					${className}Service.save(${className});
+					successNum++;
+				}catch(ConstraintViolationException ex){
+					failureNum++;
+				}catch (Exception ex) {
+					failureNum++;
+				}
+			}
+			if (failureNum>0){
+				failureMsg.insert(0, "，失败 "+failureNum+" 条${functionNameSimple}记录。");
+			}
+			addMessage(redirectAttributes, "已成功导入 "+successNum+" 条${functionNameSimple}记录"+failureMsg);
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导入${functionNameSimple}失败！失败信息："+e.getMessage());
+		}
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+    }
+	
+	/**
+	 * 下载导入${functionNameSimple}数据模板
+	 */
+	@RequiresPermissions("${permissionPrefix}:import")
+    @RequestMapping(value = "import/template")
+    public String importFileTemplate(HttpServletResponse response, RedirectAttributes redirectAttributes) {
+		this.setDbType();
+		try {
+            String fileName = "${functionNameSimple}数据导入模板.xlsx";
+    		List<${ClassName}> list = Lists.newArrayList(); 
+    		new ExportExcel("${functionNameSimple}数据", ${ClassName}.class, 1).setDataList(list).write(response, fileName).dispose();
+    		return null;
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导入模板下载失败！失败信息："+e.getMessage());
+		}
+		return "redirect:"+Global.getAdminPath()+"/${viewPrefix}/?repage";
+    }
+	
+	
+	<#list table.columnList as c>
+		<#-- 如果存在自定义java对象 -->
+			<#if c.tableName?? && c.tableName!="">
+	/**
+	 * 选择${c.comments}
+	 */
+	@RequestMapping(value = "select${c.simpleJavaField}")
+	public String select${c.simpleJavaField}(${c.simpleJavaType} ${c.simpleJavaField}, String url, String fieldLabels, String fieldKeys, String searchLabel, String searchKey, HttpServletRequest request, HttpServletResponse response, Model model) {
+		this.setDbType();
+		Page<${c.simpleJavaType}> page = ${className}Service.findPageBy${c.simpleJavaField}(new Page<${c.simpleJavaType}>(request, response),  ${c.simpleJavaField});
+		try {
+			fieldLabels = URLDecoder.decode(fieldLabels, "UTF-8");
+			fieldKeys = URLDecoder.decode(fieldKeys, "UTF-8");
+			searchLabel = URLDecoder.decode(searchLabel, "UTF-8");
+			searchKey = URLDecoder.decode(searchKey, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("labelNames", fieldLabels.split("\\|"));
+		model.addAttribute("labelValues", fieldKeys.split("\\|"));
+		model.addAttribute("fieldLabels", fieldLabels);
+		model.addAttribute("fieldKeys", fieldKeys);
+		model.addAttribute("url", url);
+		model.addAttribute("searchLabel", searchLabel);
+		model.addAttribute("searchKey", searchKey);
+		model.addAttribute("obj", ${c.simpleJavaField});
+		model.addAttribute("page", page);
+		return "modules/sys/gridselect";
+	}
+			</#if>
+	</#list>
+	
+
+}]]>
+	</content>
+</template>

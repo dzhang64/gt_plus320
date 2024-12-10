@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>viewListJs</name>
+	<filePath>WebContent/webpage/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}List.js</fileName>
+	<content><![CDATA[<%@ page contentType="text/html;charset=UTF-8" %>
+<script>
+$(document).ready(function() {
+	
+	//绑定查询按扭 
+	$("#search").click("click", function() { 
+		bindTable();
+		bindTable();
+	});
+	
+	//绑定重置按扭
+	$("#reset").click("click", function() {
+		$("#searchForm  input").val("");
+		$("#searchForm  select").val("");
+		$("#searchForm  .select-item").html("");
+		bindTable();
+		bindTable();
+	});
+});
+
+//添加   
+function add(){
+	jp.openDialog('添加${functionNameSimple}', "${r"${ctx}"}/${urlPrefix}/form",'800px', '500px', ${className}Table);
+}
+
+//编辑，没有权限时，不显示保存按钮
+function edit(id,isView){
+	if(id == undefined){
+		return;
+	}
+	if (isView) {
+		jp.openDialogView('查看${functionNameSimple}', "${r"${ctx}"}/${urlPrefix}/form?viewFlag=set&id=" + id,'800px', '500px');
+	} else {
+	<shiro:hasPermission name="${permissionPrefix}:edit">
+		jp.openDialog('编辑${functionNameSimple}', "${r"${ctx}"}/${urlPrefix}/form?id=" + id,'800px', '500px', ${className}Table);
+	</shiro:hasPermission>
+	<shiro:lacksPermission name="${permissionPrefix}:edit">
+		jp.openDialogView('查看${functionNameSimple}', "${r"${ctx}"}/${urlPrefix}/form?viewFlag=set&id=" + id,'800px', '500px');
+	</shiro:lacksPermission>
+	}
+}
+
+//单条删除
+function del(id){
+	jp.confirm('确认要删除该${functionNameSimple}及所有子${functionNameSimple}吗？',  function(){
+		jp.get("${r"${ctx}"}/${urlPrefix}/delete?id=" + id, function(data){
+			if(data.success){
+				bindTable();
+				bindTable();
+				jp.success(data.msg);
+			}else{
+				jp.error(data.msg);
+			}
+		});
+	});
+}
+</script>]]>
+	</content>
+</template>

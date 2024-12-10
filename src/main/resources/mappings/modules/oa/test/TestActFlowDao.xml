@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.test.TestActFlowDao">
+    
+	<sql id="testActFlowColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission",
+		a.goods AS "goods",
+		a.nums AS "nums",
+		a.person AS "person",
+		a.buy_date AS "buyDate"
+	</sql>
+	
+	<sql id="testActFlowJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="TestActFlow" >
+		SELECT 
+			<include refid="testActFlowColumns"/>
+		FROM oa_test_act_flow a
+		<include refid="testActFlowJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TestActFlow" >
+		SELECT 
+			<include refid="testActFlowColumns"/>
+		FROM oa_test_act_flow a
+		<include refid="testActFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TestActFlow" >
+		SELECT 
+			<include refid="testActFlowColumns"/>
+		FROM oa_test_act_flow a
+		<include refid="testActFlowJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_test_act_flow(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			goods,
+			nums,
+			person,
+			buy_date
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{goods},
+			#{nums},
+			#{person},
+			#{buyDate}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_test_act_flow_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			goods,
+			nums,
+			person,
+			buy_date
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{goods},
+			#{nums},
+			#{person},
+			#{buyDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_test_act_flow SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission},
+			goods = #{goods},
+			nums = #{nums},
+			person = #{person},
+			buy_date = #{buyDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_test_act_flow
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_test_act_flow SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TestActFlow" statementType="STATEMENT">
+		select * FROM oa_test_act_flow  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="TestActFlow" >
+		SELECT 
+			<include refid="testActFlowColumns"/>
+		FROM oa_test_act_flow a
+		<include refid="testActFlowJoins"/>
+		<where>
+			a.del_flag = #{testActFlow.DEL_FLAG_NORMAL}
+			${testActFlow.sqlMap.dsf}
+			<!-- <if test="testActFlow.ownerCode != null and testActFlow.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="testActFlow.dbName == 'oracle'">#{testActFlow.ownerCode}||'%'</if>
+				<if test="testActFlow.dbName == 'mssql'">#{testActFlow.ownerCode}+'%'</if>
+				<if test="testActFlow.dbName == 'mysql'">concat(#{testActFlow.ownerCode},'%')</if>
+				<if test="testActFlow.dbName == 'dm'">concat(#{testActFlow.ownerCode},'%')</if>
+			</if> -->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="testActFlow.page !=null and testActFlow.page.orderBy != null and testActFlow.page.orderBy != ''">
+				ORDER BY ${testActFlow.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="TestActFlow" >
+		SELECT 
+			<include refid="testActFlowColumns"/>
+		FROM oa_test_act_flow a
+		<include refid="testActFlowJoins"/>
+		<where>
+			a.del_flag = #{testActFlow.DEL_FLAG_NORMAL}
+			${testActFlow.sqlMap.dsf}
+			<!-- <if test="testActFlow.ownerCode != null and testActFlow.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="testActFlow.dbName == 'oracle'">#{testActFlow.ownerCode}||'%'</if>
+				<if test="testActFlow.dbName == 'mssql'">#{testActFlow.ownerCode}+'%'</if>
+				<if test="testActFlow.dbName == 'mysql'">concat(#{testActFlow.ownerCode},'%')</if>
+				<if test="testActFlow.dbName == 'dm'">concat(#{testActFlow.ownerCode},'%')</if>
+			</if> -->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="testActFlow.page !=null and testActFlow.page.orderBy != null and testActFlow.page.orderBy != ''">
+				ORDER BY ${testActFlow.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>viewForm</name>
+	<filePath>WebContent/webpage/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}Form.jsp</fileName>
+	<content><![CDATA[
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ include file="/webpage/include/taglib.jsp"%>
+<html>
+<head>
+	<title>${functionNameSimple}管理</title>
+	<meta name="decorator" content="default"/>
+	<#list table.columnList as c>
+		<#if c.isForm?? && c.isForm == "1" && (c.isNotBaseField || c.simpleJavaField == 'remarks')>
+			<#if c.showType == "umeditor">
+	<!-- SUMMERNOTE -->
+	<%@include file="/webpage/include/summernote.jsp" %>
+			 <#break/>
+			</#if>
+		</#if>
+	</#list>
+	<script type="text/javascript">
+		var validateForm;
+		var $${className}TreeTable; // 父页面table表格id
+		var $topIndex;//openDialog的 dialog index
+		function doSubmit(treeTable, index, pName, pValue){//回调函数，在编辑和保存动作时，供openDialog调用提交表单。
+			if(validateForm.form()){
+				var defaultPValue = '10';
+				if (!pName && !pValue) {
+					//添加
+			<#list table.columnList as c>
+				<#if c.magicLogic?? && (c.magicLogic == "status")>
+					if (${"$"}("#${c.javaFieldId}")) ${"$"}("#${c.javaFieldId}").val(defaultPValue);
+			  	<#break/>
+			  	</#if>
+			</#list>
+				} else {
+					//保存，办理
+					if (pName && pValue && ${"$"}("#" + pName) && pValue != '') ${"$"}("#" + pName).val(pValue);
+				}
+				$${className}TreeTable = treeTable;
+				$topIndex = index;
+				jp.loading();
+				$("#inputForm").submit();
+				return true;
+			}
+			return false;
+		}
+		
+		$(document).ready(function() {
+			validateForm = $("#inputForm").validate({
+				submitHandler: function(form){
+			<#list table.columnList as c>
+				<#if c.isForm?? && c.isForm == "1" && (c.isNotBaseField || c.simpleJavaField == 'remarks')>
+				<#if c.showType == "umeditor">
+					$("input[name='${c.javaFieldId}']").val($('#${c.javaFieldId}').summernote('code'));//取富文本的值
+				</#if>
+				</#if>
+			</#list>
+					jp.post("${r"${ctx}"}/${urlPrefix}/save",$('#inputForm').serialize(),function(data){
+						if(data.success){
+							var current_id = data.body.${className}.id;
+							var target = $${className}TreeTable.get(current_id);
+							var old_parent_id = target.attr("pid") == undefined?'1':target.attr("pid");
+							var current_parent_id = data.body.${className}.parentId;
+							var current_parent_ids = data.body.${className}.parentIds;
+		                    	
+							if(old_parent_id == current_parent_id){
+								if(current_parent_id == '0'){
+									$${className}TreeTable.refreshPoint(-1);
+								}else{
+									$${className}TreeTable.refreshPoint(current_parent_id);
+								}
+							}else{
+								$${className}TreeTable.del(current_id);//刷新删除旧节点
+								$${className}TreeTable.initParents(current_parent_ids, "0");
+							}
+							jp.success(data.msg);
+						}else {
+							jp.error(data.msg);
+						}
+						jp.close($topIndex);//关闭dialog
+					});
+				},
+				errorContainer: "#messageBox",
+				errorPlacement: function(error, element) {
+					$("#messageBox").text("输入有误，请先更正。");
+					if (element.is(":checkbox")||element.is(":radio")||element.parent().is(".input-append")){
+						error.appendTo(element.parent().parent());
+					} else {
+						error.insertAfter(element);
+					}
+				}
+			});
+			
+			<#list table.columnList as c>
+				<#if c.isForm?? && c.isForm == "1" && (c.isNotBaseField || c.simpleJavaField == 'remarks')>
+					<#if c.showType == "dateselect">
+	        laydate({
+				elem: '#${c.javaFieldId}', //elem允许传入class、tag，方式为 '#id .class'
+				event: 'focus'<#if (c.comments ? index_of("时间")) gt -1>,format: 'YYYY-MM-DD hh:mm:ss', istime : true</#if> //响应事件。如果没有传入event，则按照默认的click
+			});
+					</#if>
+					<#if c.showType == "umeditor">
+			//富文本初始化
+			$('#${c.javaFieldId}').summernote({                
+                lang: 'zh-CN'
+            });
+					</#if>
+				</#if>
+				<#if c.magicLogic?? && (c.magicLogic == "audit")>
+			//如果存在审核信息，创建审核信息历史列表
+			if($("#pre${c.simpleJavaField?cap_first}")) jp.bindAudits(${"$"}("#pre${c.simpleJavaField?cap_first}"),${"$"}("#${c.simpleJavaField}Div"));
+			  	</#if>
+			</#list>
+			//控制Form组件是否可编辑
+			if (${"$"}("#viewFlag")) {
+				var viewFlag = ${"$"}("#viewFlag").val();
+				if (viewFlag.indexOf("set") != -1) ${"$"}("fieldset[class='set']").attr("disabled","disabled");
+				if (viewFlag.indexOf("audit") != -1) ${"$"}("fieldset[class='audit']").attr("disabled","disabled");
+			}
+		});
+	</script>
+</head>
+<body class="hideScroll">
+	<form:form id="inputForm" modelAttribute="${className}" class="form-horizontal">
+		<form:hidden path="id"/>
+		<#-- MagicLogic hide begin -->
+		<#list table.columnList as c>
+		  <#if c.magicLogic?? && (c.magicLogic == "hide")>
+		<form:hidden path="${c.javaFieldId}" />
+		  </#if>
+		  <#-- status逻辑，用于提取状态变化，对应的动作名称，例如：上报，退回，核准等 -->
+		  <#if c.magicLogic?? && (c.magicLogic == "status")>
+		<form:hidden path="${c.javaFieldId}" />
+		<form:hidden path="pre${c.simpleJavaField?cap_first}" />
+		  </#if>
+		  <#-- audit逻辑，用于存放审核意见Json，新增审核意见附加在后面 -->
+		  <#if c.magicLogic?? && (c.magicLogic == "audit")>
+		<form:hidden path="pre${c.simpleJavaField?cap_first}" />
+		  </#if>
+		</#list>
+		<#-- MagicLogic hide end -->
+		<input type="hidden" name="dirtyUpdateDate" value="${"$"}{${className}.updateDate}" />
+		<form:hidden path="viewFlag" />
+		<sys:message content="${r"${message}"}"/>
+		<table class="table table-bordered table-condensed dataTables-example dataTable no-footer">
+			<tbody>
+			<#assign x=0 />
+			<#list table.columnList as c>
+				<#if c.simpleJavaField == 'parent' || c.isForm?? && c.isForm == "1" && (c.isNotBaseField || c.simpleJavaField == 'remarks') && c.magicLogic != "hide">
+				<#assign x=x+1 />
+				<#if x%2==1 || c.isOneLine == "1"> 
+				<tr>
+					<#if c.isOneLine == "1">
+						<#assign x=x+1 />
+					</#if>
+				</#if>
+					<td class="width-15 active"><label class="pull-right"><#if c.isNull != "1"><font color="red">*</font></#if>${c.comments}：</label></td>
+				<#if c.isOneLine == "1">
+					<td class="width-35" colspan="3">
+				<#else>
+				    <td class="width-35">
+				</#if>
+				<#if c.magicLogic?? && (c.magicLogic == "audit")>
+						<fieldset class="audit">
+				<#elseif c.showType == "fileselect" || c.showType == "fileselectclassic">
+						
+				<#else>
+						<fieldset class="set">
+				</#if>
+				<#if c.simpleJavaField == 'parent'>
+						<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							title="${c.comments}" url="/${urlPrefix}/treeData" extId="${'$'}{${className}.id}" cssClass="form-control " allowClear="true"/>
+				</#if>			
+				<#if c.showType == "input">
+						<form:input path="${c.javaFieldId}" htmlEscape="false"<#if c.maxLength?? && c.maxLength != ""> maxlength="${c.maxLength}"</#if> <#if c.minLength?? && c.minLength != ""> minlength="${c.minLength}"</#if> <#if c.maxValue?? && c.maxValue != ""> max="${c.maxValue}"</#if> <#if c.minValue?? && c.minValue != ""> min="${c.minValue}"</#if> class="form-control <#if c.isNull != "1">required</#if><#if c.validateType?? && c.validateType != ""><#if c.validateType != "string"> ${c.validateType}</#if></#if>"/>
+				<#elseif c.showType == "textarea">
+					<#if c.magicLogic?? && (c.magicLogic == "audit")>
+						<textarea id="${c.javaFieldId}" name="${c.javaFieldId}" htmlEscape="false" rows="2" class="form-control"></textarea>
+						</fieldset>
+						<fieldset>
+						<a class="btn btn-white btn-sm" onclick="(${"$"}('.more').attr('style') == '') ? ${"$"}('.more').attr('style','display:none') : ${"$"}('.more').attr('style','')" title="操作历史" style="margin-top:4px;"><i class="fa fa-edit"></i> 操作历史</a>
+						<div id="${c.simpleJavaField}Div" style="margin-top:5px;"></div>
+					<#else>
+						<form:textarea path="${c.javaFieldId}" htmlEscape="false" rows="4"<#if c.maxLength?? && c.maxLength != ""> maxlength="${c.maxLength}"</#if> <#if c.minLength?? && c.minLength != ""> minlength="${c.minLength}"</#if> <#if c.maxValue?? && c.maxValue != ""> max="${c.maxValue}"</#if> <#if c.minValue?? && c.minValue != ""> min="${c.minValue}"</#if> class="form-control <#if c.isNull != "1">required</#if><#if c.validateType?? && c.validateType != ""><#if c.validateType != "string"> ${c.validateType}</#if></#if>"/>
+					</#if>
+				<#elseif c.showType == "select">
+					<#if c.magicLogic?? && (c.magicLogic == "status")>
+						${"$"}{fns:getDictLabel(${className}.${c.javaFieldId}, '${c.dictType}', '')}
+					<#else>
+						<form:select path="${c.javaFieldId}" class="form-control <#if c.isNull != "1">required</#if>">
+							<form:option value="" label=""/>
+							<form:options items="${"$"}{fns:getDictListEdit('${c.dictType}',${className}.id)}" itemLabel="label" itemValue="value" htmlEscape="false"/>
+						</form:select>
+					</#if>
+				<#elseif c.showType == "checkbox">
+						<%--
+						<form:checkboxes path="${c.javaFieldId}" items="${"$"}{fns:getDictListEdit('${c.dictType}',${className}.id)}" itemLabel="label" itemValue="value" htmlEscape="false" class="i-checks <#if c.isNull != "1">required</#if>"/>
+						--%>
+						<sys:checkbox id="${c.javaFieldId}" name="${c.javaFieldId}" items="${"$"}{fns:getDictListEdit('${c.dictType},${className}.id')}" values="${"$"}{${className}.${c.javaFieldId}}" cssClass="i-checks <#if c.isNull != "1">required</#if>"/>
+				<#elseif c.showType == "radiobox">
+						<form:radiobuttons path="${c.javaFieldId}" items="${"$"}{fns:getDictListEdit('${c.dictType}',${className}.id)}" itemLabel="label" itemValue="value" htmlEscape="false" class="i-checks <#if c.isNull != "1">required</#if>"/>
+				<#elseif c.showType == "dateselect">
+						<input id="${c.javaFieldId}" name="${c.javaFieldId}" type="text" maxlength="20" class="laydate-icon form-control layer-date <#if c.isNull != "1">required</#if>"
+							value="<fmt:formatDate value="${"$"}{${className}.${c.javaFieldId}}" <#if (c.comments ? index_of("时间")) gt -1>pattern="yyyy-MM-dd HH:mm:ss"</#if><#if (c.comments ? index_of("时间")) == -1>pattern="yyyy-MM-dd"</#if> />"/>
+				<#elseif c.showType == "userselect">
+						<%--
+						<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							title="用户" url="/sys/office/treeData?type=3" cssClass="form-control <#if c.isNull != "1">required</#if>" allowClear="true" notAllowSelectParent="true"/>
+						--%>
+						<sys:userselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							cssClass="form-control <#if c.isNull != "1">required</#if>"/>
+				<#elseif c.showType == "officeselect">
+						<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							title="部门" url="/sys/office/treeData?type=2" cssClass="form-control <#if c.isNull != "1">required</#if>" allowClear="true" notAllowSelectParent="true"/>
+				<#elseif c.showType == "areaselect">
+						<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							title="区域" url="/sys/area/treeData" cssClass="form-control <#if c.isNull != "1">required</#if>" allowClear="true" notAllowSelectParent="true"/>
+				<#elseif c.showType == "cityselect">
+						<div class=" input-group" style=" width: 100%;">
+							<form:input path="${c.javaFieldId}" htmlEscape="false" data-toggle="city-picker" style="height: 34px;font-size: 14px;"/>
+						</div>
+				<#elseif c.showType == "fileselect">
+						<form:hidden id="${c.simpleJavaField}" path="${c.javaFieldId}" htmlEscape="false"<#if c.dataLength != "0"> maxlength="${c.dataLength}"</#if> class="form-control"/>
+						<sys:ckfinder input="${c.simpleJavaField}" type="files" uploadPath="/${moduleName}<#if subModuleName != "">/${subModuleName}</#if>/${className}" selectMultiple="true"/>
+				<#elseif c.showType == "fileselectclassic">
+						<input type="hidden" id="${c.simpleJavaField}" name="${c.simpleJavaField}" value='${"$"}{${className}.${c.simpleJavaField}}' />
+						<sys:gtfinder input="${c.simpleJavaField}" uploadPath="/${moduleName}<#if subModuleName != "">/${subModuleName}</#if>/${className}"></sys:gtfinder>
+				<#elseif c.showType == "treeselect" && c.simpleJavaField != 'parent'>
+						<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+							title="${c.comments}" url="/${urlPrefix}/treeData" extId="${'$'}{${className}.id}" cssClass="form-control <#if c.isNull != "1">required</#if>" allowClear="true"/>
+				<#elseif c.showType == "gridselect">
+						<sys:gridselect url="${r"${ctx}"}/${urlPrefix}/select${c.simpleJavaField}" id="${c.simpleJavaField}" name="${c.javaFieldId}"  value="${"$"}{${className}.${c.simpleJavaField}.id}"  title="选择${c.comments}" labelName="${c.simpleJavaField}.${c.searchKey}" 
+							labelValue="${"$"}{${className}.${c.simpleJavaField}.${c.searchKey}}" cssClass="form-control required" fieldLabels="${c.fieldLabels}" fieldKeys="${c.fieldKeys}" searchLabel="${c.searchLabel}" searchKey="${c.searchKey}" ></sys:gridselect>
+				<#elseif c.showType == "umeditor">
+						<%--
+						<form:hidden path="${c.javaFieldId}"/>
+						<div id="rich_${c.javaFieldId}">
+	                	</div>
+	                	--%>
+						<input type="hidden" name="${c.javaFieldId}"/>
+						<div id="${c.javaFieldId}">
+							${"$"}{fns:unescapeHtml(${className}.${c.javaFieldId})}
+						</div>
+				</#if>
+				<#if c.showType != "fileselect" && c.showType != "fileselectclassic">
+							</fieldset>
+				</#if>
+					</td>
+				<#if x%2==0 || c.isOneLine == "1"> 
+				</tr>
+				</#if>
+				</#if>
+			</#list>
+			<#if 1==2 && x%2==1 > 
+					<td class="width-15 active"></td>
+					<td class="width-35" ></td>
+				</tr>
+			</#if>
+			</tbody>
+		</table>
+		</form:form>
+</body>
+</html>]]>
+	</content>
+</template>

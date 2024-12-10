@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.teamwork.TeamworkDao">
+    
+	<sql id="teamworkColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission",
+		a.subject AS "subject",
+		a.urgent_level AS "urgentLevel",
+		a.file AS "file",
+		a.docfile AS "docFile",
+		suser.name AS "creatName"
+	</sql>
+	
+	<sql id="teamworkJoins">
+	</sql>
+	
+	<resultMap type="Teamwork" id="TeamworkResult" autoMapping="true">
+    	<result column="file" property="file"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    	<result column="docfile" property="docFile"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="TeamworkResult" >
+		SELECT 
+			<include refid="teamworkColumns"/>
+		FROM oa_teamwork a
+		LEFT JOIN sys_user suser on a.create_by = suser.id
+		<include refid="teamworkJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="TeamworkResult" >
+		SELECT 
+			<include refid="teamworkColumns"/>
+		FROM oa_teamwork a
+		LEFT JOIN sys_user suser on a.create_by = suser.id
+		<include refid="teamworkJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="subject != null and subject != ''">
+				AND a.subject LIKE 
+					<if test="dbName == 'oracle'">'%'||#{subject}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{subject}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{subject},'%')</if>
+					<if test="dbName == 'dm'">concat('%',#{subject},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="TeamworkResult" >
+		SELECT 
+			<include refid="teamworkColumns"/>
+		FROM oa_teamwork a
+		LEFT JOIN sys_user suser on a.create_by = suser.id
+		<include refid="teamworkJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_teamwork(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			subject,
+			urgent_level,
+			file,
+			docfile
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{subject},
+			#{urgentLevel},
+			#{file},
+			#{docFile}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_teamwork_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			subject,
+			urgent_level,
+			file,
+			docfile
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission},
+			#{subject},
+			#{urgentLevel},
+			#{file},
+			#{docFile}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_teamwork SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission},
+			subject = #{subject},
+			urgent_level = #{urgentLevel},
+			file = #{file},
+			docfile = #{docFile}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_teamwork
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_teamwork SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultMap="TeamworkResult" statementType="STATEMENT">
+		select * FROM oa_teamwork  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultMap="TeamworkResult" >
+		SELECT 
+			<include refid="teamworkColumns"/>
+		FROM oa_teamwork a
+		LEFT JOIN sys_user suser on a.create_by = suser.id
+		<include refid="teamworkJoins"/>
+		<where>
+			a.del_flag = #{teamwork.DEL_FLAG_NORMAL}
+			${teamwork.sqlMap.dsf}
+			<!--
+			<if test="teamwork.ownerCode != null and teamwork.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="teamwork.dbName == 'oracle'">#{teamwork.ownerCode}||'%'</if>
+				<if test="teamwork.dbName == 'mssql'">#{teamwork.ownerCode}+'%'</if>
+				<if test="teamwork.dbName == 'mysql'">concat(#{teamwork.ownerCode},'%')</if>
+				<if test="teamwork.dbName == 'dm'">concat(#{teamwork.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="teamwork.page !=null and teamwork.page.orderBy != null and teamwork.page.orderBy != ''">
+				ORDER BY ${teamwork.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultMap="TeamworkResult" >
+		SELECT 
+			<include refid="teamworkColumns"/>
+		FROM oa_teamwork a
+		LEFT JOIN sys_user suser on a.create_by = suser.id
+		<include refid="teamworkJoins"/>
+		<where>
+			a.del_flag = #{teamwork.DEL_FLAG_NORMAL}
+			${teamwork.sqlMap.dsf}
+			<!--
+			<if test="teamwork.ownerCode != null and teamwork.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="teamwork.dbName == 'oracle'">#{teamwork.ownerCode}||'%'</if>
+				<if test="teamwork.dbName == 'mssql'">#{teamwork.ownerCode}+'%'</if>
+				<if test="teamwork.dbName == 'mysql'">concat(#{teamwork.ownerCode},'%')</if>
+				<if test="teamwork.dbName == 'dm'">concat(#{teamwork.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="teamwork.page !=null and teamwork.page.orderBy != null and teamwork.page.orderBy != ''">
+				ORDER BY ${teamwork.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

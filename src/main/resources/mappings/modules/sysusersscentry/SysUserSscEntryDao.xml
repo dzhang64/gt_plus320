@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysusersscentry.dao.SysUserSscEntryDao">
+    
+	<sql id="sysUserSscEntryColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.name_id AS "name.id",
+		a.name_code AS "nameCode",
+		a.office_name AS "officeName",
+		a.ssc_id AS "ssc.id",
+		a.coordinate_num AS "coordinateNum",
+		a.provident_num AS "providentNum",
+		name.name AS "name.name",
+		ssc.name AS "ssc.name"
+	</sql>
+	
+	<sql id="sysUserSscEntryJoins">
+		LEFT JOIN sys_user_info name ON name.id = a.name_id
+		LEFT JOIN sys_area ssc ON ssc.id = a.ssc_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserSscEntry" >
+		SELECT 
+			<include refid="sysUserSscEntryColumns"/>
+		FROM sys_user_ssc_entry a
+		<include refid="sysUserSscEntryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserSscEntry" >
+		SELECT 
+			<include refid="sysUserSscEntryColumns"/>
+		FROM sys_user_ssc_entry a
+		<include refid="sysUserSscEntryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserSscEntry" >
+		SELECT 
+			<include refid="sysUserSscEntryColumns"/>
+		FROM sys_user_ssc_entry a
+		<include refid="sysUserSscEntryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_ssc_entry(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name_id,
+			name_code,
+			office_name,
+			ssc_id,
+			coordinate_num,
+			provident_num
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name.id},
+			#{nameCode},
+			#{officeName},
+			#{ssc.id},
+			#{coordinateNum},
+			#{providentNum}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_ssc_entry_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			name_id,
+			name_code,
+			office_name,
+			ssc_id,
+			coordinate_num,
+			provident_num
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{name.id},
+			#{nameCode},
+			#{officeName},
+			#{ssc.id},
+			#{coordinateNum},
+			#{providentNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_ssc_entry SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			name_id = #{name.id},
+			name_code = #{nameCode},
+			office_name = #{officeName},
+			ssc_id = #{ssc.id},
+			coordinate_num = #{coordinateNum},
+			provident_num = #{providentNum}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_ssc_entry
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_ssc_entry SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserSscEntry" statementType="STATEMENT">
+		select * FROM sys_user_ssc_entry  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	
+</mapper>

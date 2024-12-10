@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.projectinfo.dao.ProjectInfoDao">
+    
+	<sql id="projectInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.project_name AS "projectName",
+		a.project_num AS "projectNum",
+		a.project_attribute AS "projectAttribute",
+		a.project_type AS "projectType",
+		a.product_type AS "productType",
+		a.area_id AS "area.id",
+		a.office_id AS "office.id",
+		a.device_company AS "deviceCompany",
+		a.cooperative AS "cooperative",
+		a.operator AS "operator",
+		a.contract_amount AS "contractAmount",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.projectmanager_id AS "projectmanager.id",
+		a.attach_file AS "attachfile",
+		a.attach_message AS "attachmessage",
+		a.is_closed AS "isClosed",
+		area.name AS "area.name",
+		office.name AS "office.name",
+		projectmanager.name AS "projectmanager.name",
+		projectmanager.login_name AS "projectmanager.loginName",
+		projectmanager.name_code AS "projectmanager.nameCode"
+	</sql>
+	
+	<sql id="projectInfoJoins">
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		LEFT JOIN sys_office office ON office.id = a.office_id
+		LEFT JOIN sys_user_info projectmanager ON projectmanager.id = a.projectmanager_id
+	</sql>
+	
+	
+	<sql id="userInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.name AS "name",
+		a.idcard_num AS "idCardNum",
+		a.photo AS "photo",
+		a.gender AS "gender",
+		a.native_place AS "nativePlace",
+		a.name_code AS "nameCode",
+		a.tel AS "tel",
+		a.office_id AS "office.id",
+		a.area_id AS "area.id",
+		a.socailsecurity_city AS "ssc.id",
+		a.salary_card_num AS "salaryCardNum",
+		a.coordinate_num AS "coordinateNum",
+		a.provident_num AS "providentNum",
+		a.user_status AS "userStatus",
+		a.user_type AS "userType",
+		a.commail AS "comMail",
+		a.salary_id AS "salary.id",
+		a.salary_level AS "salaryLevel",
+		a.own_email AS "ownEmail",
+		a.emergency_user_name AS "emergencyUserName",
+		a.emergency_user_relation AS "emergencyUserRelation",
+		a.emergency_user_phone AS "emergencyUserPhone",
+		a.address AS "address",
+		a.entry_date AS "entryDate",
+		a.service_year AS "serviceYear",
+		a.intern_begin_date AS "internBeginDate",
+		a.intern_end_date AS "internEndDate",
+		a.trial_begin_date AS "trialBeginDate",
+		a.trial_end_date AS "trialEndDate",
+		a.turn_positive_date AS "turnPositiveDate",
+		a.grade_school AS "gradeSchool",
+		a.major AS "major",
+		a.grade_day AS "gradeDay",
+		a.ed AS "ed",
+		a.bachelor AS "Bachelor",
+		a.foreignlanguage_level AS "foreignLanguageLevel",
+		a.contract_sart_date AS "contractSartDate",
+		a.contract_end_date AS "contractEndDate",
+		a.contract AS "contract",
+		a.contract_type AS "contractType",
+		a.contract_limit AS "contractLimit",
+		a.login_name AS "loginName",
+		a.grade_certificate AS "gradeCertificate",
+		a.idcard_file AS "idCardFile",
+		a.person_resume AS "personResume",
+		office.name AS "office.name",
+		area.name AS "area.name",
+		ssc.name AS "ssc.name",
+		salary.level AS "salary.level"
+	</sql>
+	
+	<sql id="userInfoJoins">
+		LEFT JOIN sys_office office ON office.id = a.office_id
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		LEFT JOIN sys_area ssc ON ssc.id = a.socailsecurity_city
+		LEFT JOIN salary_level salary ON salary.id = a.salary_id
+	</sql>
+	
+    
+	<select id="get" resultType="ProjectInfo" >
+		SELECT 
+			<include refid="projectInfoColumns"/>
+		FROM project_info a
+		<include refid="projectInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByProjectNo" resultType="ProjectInfo" >
+		SELECT 
+			<include refid="projectInfoColumns"/>
+		FROM project_info a
+		<include refid="projectInfoJoins"/>
+		WHERE a.project_num = #{projectNum}
+	</select>
+	
+	<!-- 查找是否存在该项目 -->  
+	<select id="checkPro" resultType="Integer" >
+		SELECT 
+			COUNT(*) 
+		FROM project_info a
+		WHERE a.project_name = #{projectName}
+		And a.project_num = #{projectNum}
+	</select>
+	
+	
+	<!-- 分配用户使用的SQL查询 -->                                                            
+	                                                                                         
+	<select id="findUserToPro" resultType="com.gt_plus.modules.userinfo.entity.UserInfo">             
+		SELECT                                                                                 
+			<include refid="userInfoColumns"/>                                                       
+		FROM sys_user_info a                                                                        
+		<include refid="userInfoJoins"/>                                                           
+		WHERE a.id IN (SELECT ou.userinfo_id FROM project_info_userinfo ou WHERE ou.project_info_id = #{id})
+	</select>  
+	
+	  
+	<!-- 项目GRID的SQL语句 -->
+	<select id="findListByprojectInfo" resultType="ProjectInfo">
+		SELECT 
+			<include refid="projectInfoColumns"/>
+		FROM project_info a
+		<include refid="projectInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="projectNum != null and projectNum != ''">
+				AND a.projectNum LIKE 
+				<if test="dbName == 'oracle'">#{projectNum}||'%'</if>
+				<if test="dbName == 'mssql'">#{projectNum}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{projectNum},'%')</if>
+				<if test="dbName == 'dm'">concat(#{projectNum},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insertUserToPro">                                                            
+	INSERT INTO project_info_userinfo(
+			project_info_id,
+			userinfo_id
+		) VALUES (
+			#{projectNo},
+			#{id} 
+		)                                                                
+	</insert>                       
+	
+	<delete id="deleteUserToPro">                                                            
+		DELETE FROM project_info_userinfo                                                              
+		WHERE  userinfo_id  = #{userId} and project_info_id = #{projectNum}                  
+	</delete>                         
+	
+	
+	<select id="findList" resultType="ProjectInfo" >
+		SELECT 
+			<include refid="projectInfoColumns"/>
+		FROM project_info a
+		<include refid="projectInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('${ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+			<if test="projectName != null and projectName != ''">
+				AND a.project_name = #{projectName}
+			</if>
+			<if test="projectNum != null and projectNum != ''">
+				AND a.project_num = #{projectNum}
+			</if>
+			<if test="projectmanager != null and projectmanager != ''">
+				AND a.projectmanager_id = #{projectmanager.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProjectInfo" >
+		SELECT 
+			<include refid="projectInfoColumns"/>
+		FROM project_info a
+		<include refid="projectInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO project_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			project_name,
+			project_num,
+			project_attribute,
+			project_type,
+			product_type,
+			area_id,
+			office_id,
+			device_company,
+			cooperative,
+			operator,
+			contract_amount,
+			start_time,
+			end_time,
+			projectmanager_id,
+			attach_file,
+			attach_message,
+			is_closed
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{projectName},
+			#{projectNum},
+			#{projectAttribute},
+			#{projectType},
+			#{productType},
+			#{area.id},
+			#{office.id},
+			#{deviceCompany},
+			#{cooperative},
+			#{operator},
+			#{contractAmount},
+			#{startTime},
+			#{endTime},
+			#{projectmanager.id},
+			#{attachfile},
+			#{attachmessage},
+			#{isClosed}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO project_info_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			project_name,
+			project_num,
+			project_attribute,
+			project_type,
+			product_type,
+			area_id,
+			office_id,
+			device_company,
+			cooperative,
+			operator,
+			contract_amount,
+			start_time,
+			end_time,
+			projectmanager_id,
+			attach_file,
+			attach_message,
+			is_closed
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{projectName},
+			#{projectNum},
+			#{projectAttribute},
+			#{projectType},
+			#{productType},
+			#{area.id},
+			#{office.id},
+			#{deviceCompany},
+			#{cooperative},
+			#{operator},
+			#{contractAmount},
+			#{startTime},
+			#{endTime},
+			#{projectmanager.id},
+			#{attachfile},
+			#{attachmessage},
+			#{isClosed}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE project_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			project_name = #{projectName},
+			project_num = #{projectNum},
+			project_attribute = #{projectAttribute},
+			project_type = #{projectType},
+			product_type = #{productType},
+			area_id = #{area.id},
+			office_id = #{office.id},
+			device_company = #{deviceCompany},
+			cooperative = #{cooperative},
+			operator = #{operator},
+			contract_amount = #{contractAmount},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			projectmanager_id = #{projectmanager.id},
+			attach_file = #{attachfile},
+			attach_message = #{attachmessage},
+			is_closed = #{isClosed}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM project_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE project_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProjectInfo" statementType="STATEMENT">
+		select * FROM project_info  where ${propertyName} = '${value}'
+	</select>
+	
+	
+</mapper>

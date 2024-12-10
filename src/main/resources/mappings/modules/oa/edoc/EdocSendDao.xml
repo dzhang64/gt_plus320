@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.oa.dao.edoc.EdocSendDao">
+    
+	<sql id="edocSendColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.paper AS "paper",
+		a.dense AS "dense",
+		a.dense_limit AS "denseLimit",
+		a.urgency1 AS "urgency1",
+		a.urgency2 AS "urgency2",
+		a.urgency3 AS "urgency3",
+		a.year AS "year",
+		a.number AS "number",
+		a.sign AS "sign",
+		a.countersign AS "countersign",
+		a.send_to AS "sendTo",
+		a.copy_to AS "copyTo",
+		a.files AS "files",
+		a.paper_files AS "paperFiles",
+		a.title AS "title",
+		a.active AS "active",
+		a.by_apply AS "byApply",
+		a.inactive AS "inactive",
+		a.report_info AS "reportInfo",
+		a.office_network AS "officeNetwork",
+		a.system_network AS "systemNetwork",
+		a.normative_doc AS "normativeDoc",
+		a.innovation_item AS "innovationItem",
+		a.handle_org AS "handleOrg",
+		a.handler AS "handler",
+		a.handle_date AS "handleDate",
+		a.drafter AS "drafter",
+		a.phone AS "phone",
+		a.draft_date AS "draftDate",
+		a.office AS "office",
+		a.reviewer AS "reviewer",
+		a.review_date AS "reviewDate",
+		a.print_count AS "printCount",
+		a.proofreader AS "proofreader",
+		a.send_type AS "sendType",
+		a.content_url AS "contentUrl"
+	</sql>
+	
+	<sql id="edocSendJoins">
+	</sql>
+	
+    <resultMap type="EdocSend" id="EdocSendResult" autoMapping="true">
+    	<result column="files" property="files"   typeHandler="com.gt_plus.common.mapper.ConvertBlobTypeHandler"/>
+    </resultMap>
+    
+	<select id="get" resultMap="EdocSendResult" >
+		SELECT 
+			<include refid="edocSendColumns"/>
+		FROM oa_edoc_send a
+		<include refid="edocSendJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="EdocSendResult" >
+		SELECT 
+			<include refid="edocSendColumns"/>
+		FROM oa_edoc_send a
+		<include refid="edocSendJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="EdocSendResult" >
+		SELECT 
+			<include refid="edocSendColumns"/>
+		FROM oa_edoc_send a
+		<include refid="edocSendJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_edoc_send(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			paper,
+			dense,
+			dense_limit,
+			urgency1,
+			urgency2,
+			urgency3,
+			year,
+			number,
+			sign,
+			countersign,
+			send_to,
+			copy_to,
+			files,
+			paper_files,
+			title,
+			active,
+			by_apply,
+			inactive,
+			report_info,
+			office_network,
+			system_network,
+			normative_doc,
+			innovation_item,
+			handle_org,
+			handler,
+			handle_date,
+			drafter,
+			phone,
+			draft_date,
+			office,
+			reviewer,
+			review_date,
+			print_count,
+			proofreader,
+			send_type,
+			content_url
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{paper},
+			#{dense},
+			#{denseLimit},
+			#{urgency1},
+			#{urgency2},
+			#{urgency3},
+			#{year},
+			#{number},
+			#{sign},
+			#{countersign},
+			#{sendTo},
+			#{copyTo},
+			#{files},
+			#{paperFiles},
+			#{title},
+			#{active},
+			#{byApply},
+			#{inactive},
+			#{reportInfo},
+			#{officeNetwork},
+			#{systemNetwork},
+			#{normativeDoc},
+			#{innovationItem},
+			#{handleOrg},
+			#{handler},
+			#{handleDate},
+			#{drafter},
+			#{phone},
+			#{draftDate},
+			#{office},
+			#{reviewer},
+			#{reviewDate},
+			#{printCount},
+			#{proofreader},
+			#{sendType},
+			#{contentUrl}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO oa_edoc_send_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			paper,
+			dense,
+			dense_limit,
+			urgency1,
+			urgency2,
+			urgency3,
+			year,
+			number,
+			sign,
+			countersign,
+			send_to,
+			copy_to,
+			files,
+			paper_files,
+			title,
+			active,
+			by_apply,
+			inactive,
+			report_info,
+			office_network,
+			system_network,
+			normative_doc,
+			innovation_item,
+			handle_org,
+			handler,
+			handle_date,
+			drafter,
+			phone,
+			draft_date,
+			office,
+			reviewer,
+			review_date,
+			print_count,
+			proofreader,
+			send_type,
+			content_url
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{paper},
+			#{dense},
+			#{denseLimit},
+			#{urgency1},
+			#{urgency2},
+			#{urgency3},
+			#{year},
+			#{number},
+			#{sign},
+			#{countersign},
+			#{sendTo},
+			#{copyTo},
+			#{files},
+			#{paperFiles},
+			#{title},
+			#{active},
+			#{byApply},
+			#{inactive},
+			#{reportInfo},
+			#{officeNetwork},
+			#{systemNetwork},
+			#{normativeDoc},
+			#{innovationItem},
+			#{handleOrg},
+			#{handler},
+			#{handleDate},
+			#{drafter},
+			#{phone},
+			#{draftDate},
+			#{office},
+			#{reviewer},
+			#{reviewDate},
+			#{printCount},
+			#{proofreader},
+			#{sendType},
+			#{contentUrl}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE oa_edoc_send SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			paper = #{paper},
+			dense = #{dense},
+			dense_limit = #{denseLimit},
+			urgency1 = #{urgency1},
+			urgency2 = #{urgency2},
+			urgency3 = #{urgency3},
+			year = #{year},
+			number = #{number},
+			sign = #{sign},
+			countersign = #{countersign},
+			send_to = #{sendTo},
+			copy_to = #{copyTo},
+			files = #{files},
+			paper_files = #{paperFiles},
+			title = #{title},
+			active = #{active},
+			by_apply = #{byApply},
+			inactive = #{inactive},
+			report_info = #{reportInfo},
+			office_network = #{officeNetwork},
+			system_network = #{systemNetwork},
+			normative_doc = #{normativeDoc},
+			innovation_item = #{innovationItem},
+			handle_org = #{handleOrg},
+			handler = #{handler},
+			handle_date = #{handleDate},
+			drafter = #{drafter},
+			phone = #{phone},
+			draft_date = #{draftDate},
+			office = #{office},
+			reviewer = #{reviewer},
+			review_date = #{reviewDate},
+			print_count = #{printCount},
+			proofreader = #{proofreader},
+			send_type = #{sendType},
+			content_url = #{contentUrl}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM oa_edoc_send
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE oa_edoc_send SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="EdocSend" statementType="STATEMENT">
+		select * FROM oa_edoc_send  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultMap="EdocSendResult" >
+		SELECT 
+			<include refid="edocSendColumns"/>
+			,u.name AS "createBy.name" 
+			,tp.operation AS "procTaskPermission.operation"
+		FROM oa_edoc_send a
+		<include refid="edocSendJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp  ON a.proc_task_permission = tp.id
+		<where>
+			a.del_flag = #{edocSend.DEL_FLAG_NORMAL}
+			${edocSend.sqlMap.dsf}
+			<!--
+			<if test="edocSend.ownerCode != null and edocSend.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="edocSend.dbName == 'oracle'">#{edocSend.ownerCode}||'%'</if>
+				<if test="edocSend.dbName == 'mssql'">#{edocSend.ownerCode}+'%'</if>
+				<if test="edocSend.dbName == 'mysql'">concat(#{edocSend.ownerCode},'%')</if>
+				<if test="edocSend.dbName == 'dm'">concat(#{edocSend.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+			<if test="edocSend.title != null and edocSend.title != ''">
+				AND a.title LIKE
+				<if test="edocSend.dbName == 'oracle'">'%'||#{edocSend.title}||'%'</if>
+				<if test="edocSend.dbName == 'mssql'">'%'+#{edocSend.title}+'%'</if>
+				<if test="edocSend.dbName == 'mysql'">concat('%',#{edocSend.title},'%')</if>
+				<if test="edocSend.dbName == 'dm'">concat('%',#{edocSend.title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="edocSend.page !=null and edocSend.page.orderBy != null and edocSend.page.orderBy != ''">
+				ORDER BY ${edocSend.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultMap="EdocSendResult" >
+		SELECT 
+			<include refid="edocSendColumns"/>
+			,u.name AS "createBy.name" 
+		FROM oa_edoc_send a
+		<include refid="edocSendJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{edocSend.DEL_FLAG_NORMAL}
+			${edocSend.sqlMap.dsf}
+			<!--
+			<if test="edocSend.ownerCode != null and edocSend.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="edocSend.dbName == 'oracle'">#{edocSend.ownerCode}||'%'</if>
+				<if test="edocSend.dbName == 'mssql'">#{edocSend.ownerCode}+'%'</if>
+				<if test="edocSend.dbName == 'mysql'">concat(#{edocSend.ownerCode},'%')</if>
+				<if test="edocSend.dbName == 'dm'">concat(#{edocSend.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="edocSend.page !=null and edocSend.page.orderBy != null and edocSend.page.orderBy != ''">
+				ORDER BY ${edocSend.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

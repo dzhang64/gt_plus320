@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sysuserpersonnelturnpositive.dao.SysUserPersonnelTurnPositiveDao">
+    
+	<sql id="sysUserPersonnelTurnPositiveColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.owner_code AS "ownerCode",
+		a.proc_ins_id AS "procInsId",
+		a.proc_task_name AS "procTaskName",
+		a.proc_task_permission AS "procTaskPermission.id",
+		a.name_id AS "name.id",
+		a.assessment_form AS "assessmentForm",
+		a.before_salary_id AS "beforeSalary.id",
+		a.grade_pay_before AS "gradePayBefore",
+		a.after_salary_id AS "afterSalary.id",
+		a.after_grade_pay AS "afterGradePay",
+		a.entry_time AS "entryTime",
+		a.turn_time AS "turnTime",
+		a.user_type AS "userType",
+		a.isdo AS "isDo",
+		name.name AS "name.name",
+		beforeSalary.level AS "beforeSalary.level",
+		afterSalary.level AS "afterSalary.level"
+	</sql>
+	
+	<sql id="sysUserPersonnelTurnPositiveJoins">
+		LEFT JOIN  sys_user_info name ON name.id = a.name_id
+		LEFT JOIN salary_level beforeSalary ON beforeSalary.id = a.before_salary_id
+		LEFT JOIN  salary_level afterSalary ON afterSalary.id = a.after_salary_id
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserPersonnelTurnPositive" >
+		SELECT 
+			<include refid="sysUserPersonnelTurnPositiveColumns"/>
+		FROM sys_user_personnel_turn_positive a
+		<include refid="sysUserPersonnelTurnPositiveJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserPersonnelTurnPositive" >
+		SELECT 
+			<include refid="sysUserPersonnelTurnPositiveColumns"/>
+		FROM sys_user_personnel_turn_positive a
+		<include refid="sysUserPersonnelTurnPositiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${sqlMap.dsf}
+			<if test="ownerCode != null and ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SysUserPersonnelTurnPositive" >
+		SELECT 
+			<include refid="sysUserPersonnelTurnPositiveColumns"/>
+		FROM sys_user_personnel_turn_positive a
+		<include refid="sysUserPersonnelTurnPositiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_personnel_turn_positive(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			assessment_form,
+			before_salary_id,
+			grade_pay_before,
+			after_salary_id,
+			after_grade_pay,
+			entry_time,
+			turn_time,
+			user_type,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{assessmentForm},
+			#{beforeSalary.id},
+			#{gradePayBefore},
+			#{afterSalary.id},
+			#{afterGradePay},
+			#{entryTime},
+			#{turnTime},
+			#{userType},
+			#{isDo}
+		)
+	</insert>
+	
+	<insert id="insertV">
+		INSERT INTO sys_user_personnel_turn_positive_V(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			owner_code,
+			proc_ins_id,
+			proc_task_name,
+			proc_task_permission,
+			name_id,
+			assessment_form,
+			before_salary_id,
+			grade_pay_before,
+			after_salary_id,
+			after_grade_pay,
+			entry_time,
+			turn_time,
+			user_type,
+			isdo
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{ownerCode},
+			#{procInsId},
+			#{procTaskName},
+			#{procTaskPermission.id},
+			#{name.id},
+			#{assessmentForm},
+			#{beforeSalary.id},
+			#{gradePayBefore},
+			#{afterSalary.id},
+			#{afterGradePay},
+			#{entryTime},
+			#{turnTime},
+			#{userType},
+			#{isDo}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_personnel_turn_positive SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			owner_code = #{ownerCode},
+			proc_ins_id = #{procInsId},
+			proc_task_name = #{procTaskName},
+			proc_task_permission = #{procTaskPermission.id},
+			name_id = #{name.id},
+			assessment_form = #{assessmentForm},
+			before_salary_id = #{beforeSalary.id},
+			grade_pay_before = #{gradePayBefore},
+			after_salary_id = #{afterSalary.id},
+			after_grade_pay = #{afterGradePay},
+			entry_time = #{entryTime},
+			turn_time = #{turnTime},
+			user_type = #{userType},
+			isdo = #{isDo}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_personnel_turn_positive
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_personnel_turn_positive SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserPersonnelTurnPositive" statementType="STATEMENT">
+		select * FROM sys_user_personnel_turn_positive  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByProc" resultType="SysUserPersonnelTurnPositive" >
+		SELECT 
+			<include refid="sysUserPersonnelTurnPositiveColumns"/>
+			,u.name AS "createBy.name"
+		,tp.operation AS "procTaskPermission.operation"	
+		FROM sys_user_personnel_turn_positive a
+		<include refid="sysUserPersonnelTurnPositiveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		LEFT JOIN oa_task_permission tp ON a.proc_task_permission = tp.id 
+		<where>
+			a.del_flag = #{sysUserPersonnelTurnPositive.DEL_FLAG_NORMAL}
+			${sysUserPersonnelTurnPositive.sqlMap.dsf}
+			
+			AND a.proc_ins_id IN
+			<foreach collection="procInsIds" item="procInsId" open="(" separator="," close=")">
+				#{procInsId}
+			</foreach>
+		</where>
+		<choose>
+			<when test="sysUserPersonnelTurnPositive.page !=null and sysUserPersonnelTurnPositive.page.orderBy != null and sysUserPersonnelTurnPositive.page.orderBy != ''">
+				ORDER BY ${sysUserPersonnelTurnPositive.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByProcIsNull" resultType="SysUserPersonnelTurnPositive" >
+		SELECT 
+			<include refid="sysUserPersonnelTurnPositiveColumns"/>
+			,u.name AS "createBy.name"
+		FROM sys_user_personnel_turn_positive a
+		<include refid="sysUserPersonnelTurnPositiveJoins"/>
+		LEFT JOIN sys_user u  ON a.create_by = u.id
+		<where>
+			a.del_flag = #{sysUserPersonnelTurnPositive.DEL_FLAG_NORMAL}
+			${sysUserPersonnelTurnPositive.sqlMap.dsf}
+			<!--
+			<if test="sysUserPersonnelTurnPositive.ownerCode != null and sysUserPersonnelTurnPositive.ownerCode != ''">
+				AND a.owner_code LIKE 
+				<if test="sysUserPersonnelTurnPositive.dbName == 'oracle'">#{sysUserPersonnelTurnPositive.ownerCode}||'%'</if>
+				<if test="sysUserPersonnelTurnPositive.dbName == 'mssql'">#{sysUserPersonnelTurnPositive.ownerCode}+'%'</if>
+				<if test="sysUserPersonnelTurnPositive.dbName == 'mysql'">concat(#{sysUserPersonnelTurnPositive.ownerCode},'%')</if>
+				<if test="sysUserPersonnelTurnPositive.dbName == 'dm'">concat(#{sysUserPersonnelTurnPositive.ownerCode},'%')</if>
+			</if>
+			-->
+			AND a.proc_ins_id IS NULL
+		</where>
+		<choose>
+			<when test="sysUserPersonnelTurnPositive.page !=null and sysUserPersonnelTurnPositive.page.orderBy != null and sysUserPersonnelTurnPositive.page.orderBy != ''">
+				ORDER BY ${sysUserPersonnelTurnPositive.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

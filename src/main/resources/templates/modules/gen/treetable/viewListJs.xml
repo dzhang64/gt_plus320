@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>viewListJs</name>
+	<filePath>WebContent/webpage/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}List.js</fileName>
+	<content><![CDATA[<%@ page contentType="text/html;charset=UTF-8" %>
+<script>
+	var $${className}TreeTable=null;  
+	$(document).ready(function() {
+		$${className}TreeTable=$('#${className}TreeTable').treeTable({  
+			theme:'vsStyle',	           
+			expandLevel : 5,
+			column:0,
+			checkbox: false,
+			url:'${r"${ctx}"}/${urlPrefix}/getChildren?parentId=',  
+			callback:function(item) { 
+				var treeTableTpl= $("#${className}TreeTableTpl").html();
+				var result = laytpl(treeTableTpl).render({
+					row: item
+				});
+				return result;                   
+			},  
+			beforeClick: function($${className}TreeTable, id) { 
+				//异步获取数据 这里模拟替换处理  
+				$${className}TreeTable.refreshPoint(id);  
+			},  
+			beforeExpand : function($${className}TreeTable, id) {   
+			},  
+			afterExpand : function($${className}TreeTable, id) {  
+			},  
+			beforeClose : function($${className}TreeTable, id) {    
+		            	
+			}  
+		});
+		$${className}TreeTable.initParents('${r"${parentIds}"}', "0");//在保存编辑时定位展开当前节点
+	});
+	
+	//添加   
+	function add(){
+		jp.openDialog('添加${functionNameSimple}', "${r"${ctx}"}/${urlPrefix}/form",'800px', '500px', $${className}TreeTable);
+	}
+		
+	function del(con,id){  
+		jp.confirm('确认要删除${functionNameSimple}吗？', function(){
+			jp.loading();
+			$.get("${r"${ctx}"}/${urlPrefix}/delete?id="+id, function(data){
+				if(data.success){
+					$${className}TreeTable.del(id);
+					jp.success(data.msg);
+				}else{
+					jp.error(data.msg);
+				}
+			});
+		});
+	} 
+		
+	function refresh(){//刷新
+		var index = jp.loading("正在加载，请稍等...");
+		$${className}TreeTable.refresh();
+		jp.close(index);
+	}
+</script>
+<script type="text/html" id="${className}TreeTableTpl">
+			<#assign firstListField = true>
+			<#list table.columnList as c>
+				<#if c.isList?? && c.isList == "1">
+			<td><#if firstListField><a  href="#" onclick="jp.openDialogView('查看${functionNameSimple}', '${r"${ctx}"}/${urlPrefix}/form?viewFlag=set_audit&id={{d.row.id}}','800px', '500px')"></#if>
+			<#if c.showType == "select" || c.showType == "checkbox" || c.showType == "radiobox">
+				{{d.dict.${c.simpleJavaField}}}
+			<#elseif c.showType == "userselect" || c.showType == "officeselect" || c.showType == "areaselect"|| c.showType == "treeselect"|| c.showType == "gridselect">
+				{{d.row.${c.javaFieldName}}}
+			<#else>
+				{{d.row.${c.javaFieldId}}}
+			</#if>
+			<#if firstListField></a></#if></td>
+					<#assign firstListField = false>
+				</#if>
+			</#list>
+			<td>
+				<div class="btn-group">
+			 		<button type="button" class="btn  btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-cog"></i>
+						<span class="fa fa-chevron-down"></span>
+					</button>
+				  <ul class="dropdown-menu" role="menu">
+					<shiro:hasPermission name="${permissionPrefix}:view">
+						<li><a href="#" onclick="jp.openDialogView('查看${functionNameSimple}', '${r"${ctx}"}/${urlPrefix}/form?viewFlag=set_audit&id={{d.row.id}}','800px', '500px')"><i class="fa fa-search-plus"></i> 查看</a></li>
+					</shiro:hasPermission>
+					<shiro:hasPermission name="${permissionPrefix}:edit">
+						<li><a href="#" onclick="jp.openDialog('编辑${functionNameSimple}', '${r"${ctx}"}/${urlPrefix}/form?id={{d.row.id}}','800px', '500px', $${className}TreeTable)"><i class="fa fa-edit"></i> 编辑</a></li>
+		   			</shiro:hasPermission>
+		   			<shiro:hasPermission name="${permissionPrefix}:del">
+		   				<li><a  onclick="return del(this, '{{d.row.id}}')"><i class="fa fa-trash"></i> 删除</a></li>
+					</shiro:hasPermission>
+		   			<shiro:hasPermission name="${permissionPrefix}:add">
+						<li><a href="#" onclick="jp.openDialog('添加下级${functionNameSimple}', '${r"${ctx}"}/${urlPrefix}/form?parent.id={{d.row.id}}','800px', '500px', $${className}TreeTable)"><i class="fa fa-plus"></i> 添加下级${functionNameSimple}</a></li>
+					</shiro:hasPermission>
+				  </ul>
+				</div>
+			</td>
+	</script>]]>
+	</content>
+</template>

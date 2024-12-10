@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<!-- 
+	jsp增强标签：
+	1. list-edit 列表中的编辑按钮
+	-->
+	<name>viewList</name>
+	<filePath>WebContent/webpage/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}List.jsp</fileName>
+	<content><![CDATA[
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ include file="/webpage/include/taglib.jsp"%>
+<html>
+<head>
+	<title>${functionNameSimple}管理</title>
+	<meta name="decorator" content="default"/>
+	<%@ include file="/webpage/include/bootstraptable.jsp"%>
+	<%@ include file="${className}List.js" %>
+	<script type="text/javascript">
+		$(document).ready(function() {
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		var path = '${"$"}{path}';
+		if (path == null || path == '') {
+			path = 'Todo';
+		}
+		$('#oa-btn-group').children().attr('class','btn btn-sm btn-white');
+		$('a#' + path).attr('class', 'btn btn-sm btn-success');
+		<#else>
+		<%--
+		<#list table.columnList as c>
+		<#if c.isQuery?? && c.isQuery == "1">
+		<#if c.showType == "dateselect" && c.queryType == "between">
+	        laydate({
+	            elem: '#begin${c.simpleJavaField?cap_first}', 
+	            event: 'focus'<#if (c.comments ? index_of("时间")) gt -1>,format: 'YYYY-MM-DD hh:mm:ss', istime : true</#if> 
+	        });
+	        laydate({
+	            elem: '#end${c.simpleJavaField?cap_first}', 
+	            event: 'focus'<#if (c.comments ? index_of("时间")) gt -1>,format: 'YYYY-MM-DD hh:mm:ss', istime : true</#if> 
+	        });
+					
+		
+		<#elseif c.showType == "dateselect">
+			laydate({
+	            elem: '#${c.javaFieldId}', 
+	            event: 'focus'<#if (c.comments ? index_of("时间")) gt -1>,format: 'YYYY-MM-DD hh:mm:ss', istime : true</#if> 
+	        });
+		</#if>
+		</#if>
+		</#list>
+		--%>
+		</#if>
+		});
+		
+		//gridselect选择后执行
+		function afterGridSelect(callbackKey, item) {
+			<%--
+			//callbackKey，区分多个gridselect
+			//if(callbackKey == 'gridselect_01') {
+			//
+			//} else if (callbackKey == 'gridselect_02') {
+			//
+			//}
+			--%>
+		}
+		
+		//导出EXCEL
+		function excelexport(){
+		  var param =null;
+		  var url ='${ctx}/${urlPrefix}/export';
+		  var $iframe = $('<iframe id="down-file-iframe" />');
+          var $form = $('<form target="down-file-iframe" method="post"/>');
+          $form.attr('action', url);
+          if(param!=null){
+	           for (var key in param) {
+	             $form.append('<input type="hidden" name="' + key + '" value="' + param[key] + '" />');
+	          }
+          }
+          $iframe.append($form);
+          $(document.body).append($iframe);
+          $form[0].submit();
+          $iframe.remove();
+		}
+		
+		
+	</script>
+</head>
+<body class="gray-bg">
+	<div class="wrapper wrapper-content">
+	<div class="ibox">
+	<div class="ibox-title">
+		<h5>${functionNameSimple}列表 </h5>
+		<div class="ibox-tools">
+			<a class="collapse-link">
+				<i class="fa fa-chevron-up"></i>
+			</a>
+			<a class="dropdown-toggle" data-toggle="dropdown" href="#" style="display:none">
+				<i class="fa fa-wrench"></i>
+			</a>
+			<ul class="dropdown-menu dropdown-user">
+				<li><a href="#">选项1</a>
+				</li>
+				<li><a href="#">选项2</a>
+				</li>
+			</ul>
+			<a class="close-link">
+				<i class="fa fa-times"></i>
+			</a>
+		</div>
+	</div>
+    
+    <div class="ibox-content">
+	<sys:message content="${r"${message}"}"/>
+	
+	<!--查询条件-->
+	<div class="row">
+	<div class="col-sm-12">
+	<form:form id="searchForm" modelAttribute="${className}" action="${r"${ctx}"}/${urlPrefix}/" method="post" class="form-inline">
+		<input id="pageNo" name="pageNo" type="hidden" value="${r"${page.pageNo}"}"/>
+		<input id="pageSize" name="pageSize" type="hidden" value="${r"${page.pageSize}"}"/>
+		<#if table.ownerCodeExists>
+		<input id="ownerCode" name="ownerCode" type="hidden" value="${r"${ownerCode}"}" />
+		</#if>
+		<table:sortColumn id="orderBy" name="orderBy" value="${r"${page.orderBy}"}" callback="sortOrRefresh();"/><!-- 支持排序 -->
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		<%--
+		<!-- 组合查询开始 -->
+		</#if>
+		<#list table.columnList as c>
+			<#if c.isQuery?? && c.isQuery == "1">
+			<div class="form-group">
+			<span>${c.comments}：</span>
+			<#if c.showType == "input" || c.showType == "textarea">
+				<form:input path="${c.javaFieldId}" htmlEscape="false"<#if c.dataLength != "0"> maxlength="${c.dataLength}"</#if>  class=" form-control input-sm"/>
+			<#elseif c.showType == "select">
+				<form:select path="${c.javaFieldId}"  class="form-control m-b">
+					<form:option value="" label=""/>
+					<form:options items="${"$"}{fns:getDictList('${c.dictType}')}" itemLabel="label" itemValue="value" htmlEscape="false"/>
+				</form:select>
+			<#elseif c.showType == "checkbox">
+				<form:checkboxes class="i-checks" path="${c.javaFieldId}" items="${"$"}{fns:getDictList('${c.dictType}')}" itemLabel="label" itemValue="value" htmlEscape="false"/>
+			<#elseif c.showType == "radiobox">
+				<form:radiobuttons class="i-checks" path="${c.javaFieldId}" items="${"$"}{fns:getDictList('${c.dictType}')}" itemLabel="label" itemValue="value" htmlEscape="false"/>
+			<#elseif c.showType == "dateselect" && c.queryType == "between">
+				<input id="begin${c.simpleJavaField?cap_first}" name="begin${c.simpleJavaField?cap_first}" type="text" maxlength="20" class="laydate-icon form-control layer-date input-sm"
+					value="<fmt:formatDate value="${"$"}{${className}.begin${c.simpleJavaField?cap_first}}" <#if (c.comments ? index_of("时间")) gt -1>pattern="yyyy-MM-dd HH:mm:ss"</#if><#if (c.comments ? index_of("时间")) == -1>pattern="yyyy-MM-dd"</#if> />"/> - 
+				<input id="end${c.simpleJavaField?cap_first}" name="end${c.simpleJavaField?cap_first}" type="text" maxlength="20" class="laydate-icon form-control layer-date input-sm"
+					value="<fmt:formatDate value="${"$"}{${className}.end${c.simpleJavaField?cap_first}}" <#if (c.comments ? index_of("时间")) gt -1>pattern="yyyy-MM-dd HH:mm:ss"</#if><#if (c.comments ? index_of("时间")) == -1>pattern="yyyy-MM-dd"</#if> />"/>
+			<#elseif c.showType == "dateselect">
+				<input id="${c.javaFieldId}" name="${c.javaFieldId}" type="text" maxlength="20" class="laydate-icon form-control layer-date input-sm"
+					value="<fmt:formatDate value="${"$"}{${className}.${c.javaFieldId}}" <#if (c.comments ? index_of("时间")) gt -1>pattern="yyyy-MM-dd HH:mm:ss"</#if><#if (c.comments ? index_of("时间")) == -1>pattern="yyyy-MM-dd"</#if> />"/>
+			<#elseif c.showType == "userselect">
+				<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+					title="用户" url="/sys/office/treeData?type=3" cssClass="form-control input-sm" allowClear="true" notAllowSelectParent="true"/>
+			<#elseif c.showType == "officeselect">
+				<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+					title="部门" url="/sys/office/treeData?type=2" cssClass="form-control input-sm" allowClear="true" notAllowSelectParent="true"/>
+			<#elseif c.showType == "areaselect">
+				<sys:treeselect id="${c.simpleJavaField}" name="${c.javaFieldId}" value="${"$"}{${className}.${c.javaFieldId}}" labelName="${c.javaFieldName}" labelValue="${"$"}{${className}.${c.javaFieldName}}"
+					title="区域" url="/sys/area/treeData" cssClass="form-control input-sm" allowClear="true" notAllowSelectParent="true"/>
+			<#elseif c.showType == "gridselect">
+				<sys:gridselectcustom url="${r"${ctx}"}/${urlPrefix}/select${c.simpleJavaField}" id="${c.simpleJavaField}" name="${c.simpleJavaField}"  value="${"$"}{${className}.${c.simpleJavaField}.id}"  title="选择${c.comments}" labelName="${c.simpleJavaField}.${c.searchKey}" 
+					labelValue="${"$"}{${className}.${c.simpleJavaField}.${c.searchKey}}" cssClass="form-control input-sm required" fieldLabels="${c.fieldLabels}" fieldKeys="${c.fieldKeys}" searchLabel="${c.searchLabel}" searchKey="${c.searchKey}" callbackKey="${c.simpleJavaField}"></sys:gridselectcustom>
+			</#if>
+			</div>
+			</#if>
+		</#list>
+		<div class="form-group pull-right">
+			<a id="search" class="btn btn-primary btn-rounded  btn-bordered btn-sm"><i class="fa fa-search"></i> 查询</a>
+			<a id="reset" class="btn btn-primary btn-rounded  btn-bordered btn-sm" ><i class="fa fa-refresh"></i> 重置</a>
+		</div>
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		--%>
+		<!-- 组合查询结束 -->
+		</#if>
+	</form:form>
+	<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+	<#else>
+	<br/>
+	</#if>
+	</div>
+	</div>
+	
+	<!-- 工具栏 -->
+	<div id="toolbar">
+		<shiro:hasPermission name="${permissionPrefix}:add">
+		<#if table.isBuildAdd?? && table.isBuildAdd == "1">
+			<a id="add" class="btn btn-sm btn-primary" onclick="add()"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+			<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+			<script>
+				function add(){
+					var params = '{"button":"暂存","type":"save","flag":"save"};' 
+							   + '{"button":"提交","type":"saveAndStart","flag":"saveAndStart"};'
+							   + '{"button":"取消","type":"cancel","flag":"cancel"};';
+					jp.openDialogFlow('添加${functionNameSimple}', "${"$"}{ctx}/${urlPrefix}/form",'1000px', '100%', $('#${className}Table'), params);
+				}
+			</script>
+			</#if>
+		</#if>
+		</shiro:hasPermission>
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		
+		<div id="oa-btn-group" class="btn-group">
+			<shiro:hasPermission name="${permissionPrefix}:edit">
+		    	<a id="Unsent" href="${r"${ctx}"}/${urlPrefix}/list/Unsent" class="btn btn-sm btn-white"><i class="glyphicon glyphicon-edit"></i> 待发</a>
+		    </shiro:hasPermission>
+			<shiro:hasPermission name="${permissionPrefix}:edit">
+			    <a id="Sent" href="${r"${ctx}"}/${urlPrefix}/list/Sent" class="btn btn-sm btn-white"><i class="glyphicon glyphicon-ok"></i> 已发</a>
+		    </shiro:hasPermission>
+			<shiro:hasPermission name="${permissionPrefix}:edit">
+			    <a id="Todo" href="${r"${ctx}"}/${urlPrefix}/list/Todo" class="btn btn-sm btn-success"><i class="glyphicon glyphicon-edit"></i> 待办</a>
+		    </shiro:hasPermission>
+			<shiro:hasPermission name="${permissionPrefix}:edit">
+			    <a id="Doing" href="${r"${ctx}"}/${urlPrefix}/list/Doing" class="btn btn-sm btn-white"><i class="glyphicon glyphicon-edit"></i> 在办</a>
+		    </shiro:hasPermission>
+			<shiro:hasPermission name="${permissionPrefix}:edit">
+			    <a id="Done" href="${r"${ctx}"}/${urlPrefix}/list/Done" class="btn btn-sm btn-white"><i class="glyphicon glyphicon-ok"></i> 已办</a>
+		    </shiro:hasPermission>
+		</div>
+	
+		</#if>
+		<shiro:hasPermission name="${permissionPrefix}:del">
+		<#if table.isBuildDel?? && table.isBuildDel == "1">
+			<button id="remove" class="btn btn-sm btn-danger" disabled onclick="deleteAll()">
+				<i class="glyphicon glyphicon-remove"></i> 删除
+			</button>
+		</#if>
+		</shiro:hasPermission>
+		<shiro:hasPermission name="${permissionPrefix}:import">
+		<#if table.isBuildImport?? && table.isBuildImport == "1">
+			<button id="btnImport" class="btn btn-sm btn-info"><i class="fa fa-folder-open-o"></i> 导入</button>
+			<div id="importBox" class="hide">
+				<form id="importForm" action="${r"${ctx}"}/${urlPrefix}/import" method="post" enctype="multipart/form-data"
+					style="padding-left:20px;text-align:center;" ><br/>
+					<input id="uploadFile" name="file" type="file" style="width:330px"/>导入文件不能超过5M，仅允许导入“xls”或“xlsx”格式文件！<br/>	
+				</form>
+			</div>
+		</#if>
+		</shiro:hasPermission>
+		
+		<shiro:hasPermission name="${permissionPrefix}:export">
+		<#if table.isBuildImport?? && table.isBuildImport == "1">
+			 <a id="btnExport" class="btn btn-sm btn-white" onclick="excelexport()"><i class="glyphicon glyphicon-plus"></i> 导出</a>
+		</#if>
+		</shiro:hasPermission>
+		
+		<#if table.isProcessDefinition?? && table.isProcessDefinition == "1">
+		--%>
+		</#if>
+	</div>
+
+	<!-- 表格 -->
+	<table id="${className}Table"   data-toolbar="#toolbar" data-id-field="id"></table>
+	
+	<br/>
+	<br/>
+	</div>
+	</div>
+</div>
+</body>
+</html>]]>
+	</content>
+</template>

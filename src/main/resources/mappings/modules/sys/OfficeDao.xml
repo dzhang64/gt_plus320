@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gt_plus.modules.sys.dao.OfficeDao">
+
+	<sql id="officeColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.area_id AS "area.id",
+		a.code AS "code",
+		a.name AS "name",
+		a.short_name AS "shortName",
+		a.name AS "fullPathName",
+		a.sort AS "sort",
+		a.types AS "type",
+		a.grade AS "grade",
+		a.address AS "address", 
+		a.zip_code AS "zipCode", 
+		a.master AS "master", 
+		a.phone AS "phone", 
+		a.fax AS "fax", 
+		a.email AS "email", 
+		a.remarks AS "remarks",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.useable AS "useable",
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id",
+		p.name AS "parent.name",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds",
+		pp.name AS "primaryPerson.name",
+		dp.name AS "deputyPerson.name"
+		<!-- 增加岗位列表
+		, 
+		post.id AS "post.id",
+		post.name AS "post.name",
+		post.code AS "post.code",
+		post.type_code AS "post.typeCode"
+		-->
+	</sql>
+	
+	<resultMap type="Office" id="officeColumnsMap">
+		<id property="id" column="id" />
+		<result property="parent.id" column="parent.id" />
+		<result property="parentIds" column="parentIds" />
+		<result property="area.id" column="area.id" />
+		<result property="code" column="code" />
+		<result property="name" column="name" />
+		<result property="shortName" column="shortName" />
+		<result property="fullPathName" column="fullPathName" />
+		<result property="sort" column="sort" />
+		<result property="type" column="type" />
+		<result property="grade" column="grade" />
+		<result property="address" column="address" />
+		<result property="zipCode" column="zipCode" />
+		<result property="master" column="master" />
+		<result property="phone" column="phone" />
+		<result property="fax" column="fax" />
+		<result property="email" column="email" />
+		<result property="remarks" column="remarks" />
+		<result property="createBy.id" column="createBy.id" />
+		<result property="createDate" column="createDate" />
+		<result property="updateBy.id" column="updateBy.id" />
+		<result property="updateDate" column="updateDate" />
+		<result property="delFlag" column="delFlag" />
+		<result property="useable" column="useable" />
+		<result property="primaryPerson.id" column="primaryPerson.id" />
+		<result property="deputyPerson.id" column="deputyPerson.id" />
+		<result property="parent.name" column="parent.name" />
+		<result property="area.name" column="area.name" />
+		<result property="area.parentIds" column="area.parentIds" />
+		<result property="primaryPerson.name" column="primaryPerson.name" />
+		<result property="deputyPerson.name" column="deputyPerson.name" />
+	</resultMap>
+	
+	<resultMap type="Office" id="Office" extends="officeColumnsMap">
+		<!-- 
+		<collection property="postList" ofType="Post">
+			<id property="id" column="post.id" />
+			<result property="name" column="post.name" />
+			<result property="code" column="post.code" />
+			<result property="typeCode" column="post.typeCode" />
+		</collection>
+		 -->
+	</resultMap>
+	
+	<sql id="officeJoins">
+		LEFT JOIN sys_office p ON p.id = a.parent_id
+		LEFT JOIN sys_area ar ON ar.id = a.area_id
+		LEFT JOIN sys_user pp ON pp.id = a.primary_person
+		LEFT JOIN sys_user dp ON dp.id = a.deputy_person
+		<!-- 增加岗位列表 
+		LEFT JOIN sys_office_post op ON op.office_id = a.id
+		LEFT JOIN sys_post post ON post.id = op.post_id
+		-->
+    </sql>
+	
+	<select id="get" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- office管理局或基层处name下拉列表 
+	<select id="findOfficeNameList" resultMap="Office" >
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<where>
+			<if test="code != null and code != ''">
+				AND a.code LIKE 
+				<if test="dbName == 'oracle'">#{ownerCode}||'%'</if>
+				<if test="dbName == 'mssql'">#{ownerCode}+'%'</if>
+				<if test="dbName == 'mysql'">concat('#{ownerCode},'%')</if>
+				<if test="dbName == 'dm'">concat(#{ownerCode},'___%')</if>
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.types = #{type}
+			</if>
+		</where>
+		ORDER BY a.code ASC
+	</select>
+	-->
+	
+	<select id="getByCode" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		
+		WHERE a.code = #{code}
+	</select>
+	
+	<select id="findList" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.office.id}
+		ORDER BY a.sort, a.parent_ids, a.code
+	</select>
+	
+	
+	<select id="findCompanyListByOwnerCode" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- types 1表示单位 2表示部门 -->
+		AND a.types = '1' 
+		<if test="code != null and code != ''">
+			AND a.code LIKE CONCAT(#{code}, '___') 
+			AND a.code &lt;&gt; #{code}
+		</if>
+		ORDER BY a.sort, a.parent_ids, a.code
+	</select>
+			
+	<select id="findAllList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.sort, a.parent_ids, a.code
+	</select>
+	
+	<select id="findByParentIdsLike" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		<if test="id != null and id != ''">
+			AND a.parent_ids LIKE CONCAT(#{parentIds}, '%') AND a.id = #{id}
+			OR a.parent_ids LIKE CONCAT(#{parentIds}, #{id}, ',%')
+		</if>
+		ORDER BY a.sort, a.parent_ids, a.code
+	</select>
+	
+	<select id="findListOfficeByName" resultMap="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		<if test="name != null and name != ''">
+			AND a.name = #{name}
+		</if>
+		ORDER BY a.sort, a.parent_ids, a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_office(
+			id, 
+			parent_id, 
+			parent_ids, 
+			area_id, 
+			code, 
+			name, 
+			short_name,
+			sort, 
+			types, 
+			grade, 
+			address, 
+			zip_code, 
+			master, 
+			phone, 
+			fax, 
+			email, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			del_flag,
+			useable,
+			primary_person,
+			deputy_person
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{area.id}, 
+			#{code}, 
+			#{name}, 
+			#{shortName}, 
+			#{sort}, 
+			#{type}, 
+			#{grade}, 
+			#{address}, 
+			#{zipCode}, 
+			#{master}, 
+			#{phone}, 
+			#{fax}, 
+			#{email}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{delFlag},
+			#{useable},
+			#{primaryPerson.id},
+			#{deputyPerson.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_office SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			area_id = #{area.id}, 
+			code = #{code}, 
+			name = #{name}, 
+			short_name = #{shortName}, 
+			sort = #{sort},
+			types = #{type}, 
+			grade = #{grade}, 
+			address = #{address}, 
+			zip_code = #{zipCode}, 
+			master = #{master}, 
+			phone = #{phone}, 
+			fax = #{fax}, 
+			email = #{email}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks},
+			useable=#{useable},
+			primary_person=#{primaryPerson.id},
+			deputy_person=#{deputyPerson.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sys_office SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM sys_office 
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+					<if test="dbName == 'dm'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<update id="deletePostList">
+		DELETE FROM sys_office_post
+		WHERE office_id = #{id}
+	</update>
+	
+	<update id="deleteByLogic">
+		UPDATE sys_office SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+					<if test="dbName == 'dm'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<insert id="insertOfficePost">
+		INSERT INTO sys_office_post(
+			office_id, 
+			post_id
+			) VALUES ( 
+			#{officeId},
+			#{postId}
+		)
+	</insert>
+	
+</mapper>
